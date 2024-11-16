@@ -2,7 +2,9 @@
 Mogli bismo iskoristiti display:flex na ul element, te justify-content: space-around i justify-content: space-evenly. Takodjer imamo i relativno malu velicinu 
 bar-a pa bi se trebalo podesiti da se ona mijenja dinamicki proporcionalno sa povecanjem ikonica jer dešava se da ikonice dodiruju donji dio bar-a čak i ako
 se postavi padding odnosno udaljenost od bar-a. Dešava se i to da se sa desne strane pojavlje scroll-anje jer text i ikonica kada se ne hovera ne mogu bas 
-u potpunosti zauzeti taj prostor jedini nacin je da se smanje jos ikonice ili text ali onda ne bi bili vidljivi sto nije nikako dobro.
+u potpunosti zauzeti taj prostor jedini nacin je da se smanje jos ikonice ili text ali onda ne bi bili vidljivi sto nije nikako dobro. Potrebno je dodati
+target _blanc kako bi postigli da se odabirom na bilo šta na meniju otvara u novom tabu jer u iduća tri zadatka imamo problem jer se koristi taj meni koji
+se otvara u iframe-u što nije nikako pregledno.
 
 2. Najveći problem predstavlja to što se ne može pomoću flexa poravnati prvi red da bude centriran a da drugi red bude poravnat slijeva nadesno.
 Namjestio sam cijelu sekciju stan tako da bude poravnata slijeva nadesno dok su sekcije Kuca i Poslovni prostor ostali poravnati po centru.
@@ -10,6 +12,12 @@ Ono što je problem što se ne mogu postići identične pozicije elemenata kada 
 jedan red ne predstavlja nikakav problem. Ono što bi se moglo izvesti je poravnanje u slucaju grid elementa kako bi se postigao priblizno slican izgled
 stranice.
 
-3. 
+3. Ovdje može predstavljati problem to što se ne prikazuju dugmad za navigaciju za širine ekrana veće od 600 jer u tom slučaju ne postoji način na
+koji se može listati na sljedeći tip detalja jer su dugmad uklonjena dok tu mogućnost imamo za ekrane širine manje od 600px. I ono što bi se trebalo promijeniti
+je da se ne radi sa pixelima nego sa nekom drugom velicinom kao sto je em, ili da koristimo procentualne zavisnosti. Bilo bi jednostavnije jer imamo dosta
+razlicitih uslova pod kojima se mijenja sam izgled stranice.
 
-4. 
+4. Najveći problem predtsavlja to što bi se moralo harcodirati svako sljedeće ograničenje na širinu stranice ukoliko bi se tražio drugačiji raspored elemenata.
+To čini kod veoma dugim iako on izgleda prilično jednostavan za implementaciju. Koristio sam grid jer je dosta lakše za postavljanje elementa nego koristeći 
+raspored pomoću flex-a. Dosta bi bolje bilo kada bi oblici vijesti predstavljali različite opise vijesti pa da se pomoću odabira onoga šta se traži moglo odabrati 
+koji tip vijesti da se prikaže. Ovako je sve nekako nabacano jedno pored drugog kao i sam tekst. 

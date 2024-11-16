@@ -6,6 +6,12 @@ body {
     background-color: #f4f7f6;
 }
 
+iframe {
+    border: none; 
+    width: 100%;
+    height: 50px;
+}
+
 .container {
     display: grid;
     margin: 10px;

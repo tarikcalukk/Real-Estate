@@ -1,0 +1,172 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: grid;
+    gap: 10px;
+}
+
+.glavnaVijest {
+    background-color: #f0f0f0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.visokaVijest {
+    background-color: #d0eaff;
+    padding: 10px;
+    box-sizing: border-box;
+    grid-row: span 2;
+}
+
+.kvadratnaVijest {
+    background-color: #ffe5d0;
+    padding: 10px;
+    box-sizing: border-box;
+    aspect-ratio: 1 / 1;
+}
+
+
+@media(min-width: 800px) {
+
+    .container {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .glavnaVijest {
+        grid-column: span 4;
+        aspect-ratio: 2 / 1; /* Visina je polovina širine */
+    }
+
+    .visokaVijest:nth-child(2) {
+        grid-column: 1;
+    }
+
+    .kvadratnaVijest:nth-child(3) {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    .kvadratnaVijest:nth-child(4) {
+        grid-column: 3;
+        grid-row: 2;
+    }
+
+    .kvadratnaVijest:nth-child(5) {
+        grid-column: 2;
+        grid-row: 3;
+    }
+
+    .kvadratnaVijest:nth-child(6) {
+        grid-column: 3;
+        grid-row: 3;
+    }
+
+    .visokaVijest:nth-child(7) {
+        grid-column: 4;
+    }
+
+    .kvadratnaVijest:nth-child(8) {
+        grid-column: 1;
+        grid-row: 4;
+    }
+
+    .kvadratnaVijest:nth-child(9) {
+        grid-column: 2;
+        grid-row: 4;
+    }
+
+    .kvadratnaVijest:nth-child(10) {
+        grid-column: 1;
+        grid-row: 5;
+    }
+
+    .kvadratnaVijest:nth-child(11) {
+        grid-column: 2;
+        grid-row: 5;
+    }
+
+
+    .visokaVijest:nth-child(12) {
+        grid-column: 3;
+    }
+
+
+    .visokaVijest:nth-child(13) {
+        grid-column: 4;
+    }
+}
+
+@media (max-width: 800px) {
+    .container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .glavnaVijest {
+        grid-column: span 2;
+    }
+
+    .visokaVijest:nth-child(2) {
+        grid-column: 1;
+        grid-row: span 2;
+    }
+
+    .kvadratnaVijest:nth-child(3) {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    .kvadratnaVijest:nth-child(4) {
+        grid-column: 2;
+        grid-row: 3;
+    }
+
+    .kvadratnaVijest:nth-child(5) {
+        grid-column: 1;
+        grid-row: 4;
+    }
+
+    .kvadratnaVijest:nth-child(6) {
+        grid-column: 1;
+        grid-row: 5;
+    }
+
+    .visokaVijest:nth-child(7) {
+        grid-column: 2;
+        grid-row: span 2;
+    }
+
+    .kvadratnaVijest:nth-child(8) {
+        grid-column: 1;
+        grid-row: 6;
+    }
+
+    .kvadratnaVijest:nth-child(9) {
+        grid-column: 2;
+        grid-row: 6;
+    }
+
+    .kvadratnaVijest:nth-child(10) {
+        grid-column: 1;
+        grid-row: 7;
+    }
+
+    .kvadratnaVijest:nth-child(11) {
+        grid-column: 2;
+        grid-row: 7;
+    }
+
+
+    .visokaVijest:nth-child(12) {
+        grid-column: 1;
+        grid-row: span 2;
+    }
+
+
+    .visokaVijest:nth-child(13) {
+        grid-column: 2;
+        grid-row: span 2;
+    }
+}

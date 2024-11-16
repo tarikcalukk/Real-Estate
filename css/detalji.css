@@ -90,11 +90,11 @@ body {
     }
 
     #upiti .upit {
-        display: none; /* Sakrij sve upite */
+        display: none;
     }
 
     #upiti .upit:nth-child(1) {
-        display: block; /* Prikazi samo prvi upit */
+        display: block;
     }
 
     /* Stil za navigaciona dugmad (samo za prikaz ispod 600px) */

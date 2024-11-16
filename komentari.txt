@@ -1,4 +1,15 @@
-1. 
-2.
-3.
-4.
+1. U ovom zadatku je možda jedino potrebno još dodati da se ikone rasporede ravnomjerno preko cijelog bar-a a ne samo da budu u lijevom uglu stranice.
+Mogli bismo iskoristiti display:flex na ul element, te justify-content: space-around i justify-content: space-evenly. Takodjer imamo i relativno malu velicinu 
+bar-a pa bi se trebalo podesiti da se ona mijenja dinamicki proporcionalno sa povecanjem ikonica jer dešava se da ikonice dodiruju donji dio bar-a čak i ako
+se postavi padding odnosno udaljenost od bar-a. Dešava se i to da se sa desne strane pojavlje scroll-anje jer text i ikonica kada se ne hovera ne mogu bas 
+u potpunosti zauzeti taj prostor jedini nacin je da se smanje jos ikonice ili text ali onda ne bi bili vidljivi sto nije nikako dobro.
+
+2. Najveći problem predstavlja to što se ne može pomoću flexa poravnati prvi red da bude centriran a da drugi red bude poravnat slijeva nadesno.
+Namjestio sam cijelu sekciju stan tako da bude poravnata slijeva nadesno dok su sekcije Kuca i Poslovni prostor ostali poravnati po centru.
+Ono što je problem što se ne mogu postići identične pozicije elemenata kada se grid pretvara u flex u slucaju da se nalazi vise od jednog reda. Za
+jedan red ne predstavlja nikakav problem. Ono što bi se moglo izvesti je poravnanje u slucaju grid elementa kako bi se postigao priblizno slican izgled
+stranice.
+
+3. 
+
+4. 

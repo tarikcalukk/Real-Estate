@@ -33,24 +33,23 @@ li a:hover {
     color: #ff9900;
 }
 
-li i {
+li a:hover span {
+    visibility: hidden;
+}
+
+i {
     display: block;
     color: rgb(177, 204, 89);
     font-size: 1em;
     transition: all 1s ease;
-    transform: translateX(-50%);
     margin-bottom: 0.3em;
     position: absolute;
     bottom: -0.3em;
-    transform: translateX(-50%); 
+    transform: translateX(-50%);
+    left: 50%;
 }
 
-
-li:hover i {
+li a:hover i {
     font-size: 1.5em;
     bottom: 0;
-}
-
-li:hover a {
-    visibility: hidden;
 }

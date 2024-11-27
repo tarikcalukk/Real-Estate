@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../Scripts/statistika.js"></script>
+    <script src="../Scripts/nekretnine.js"></script>
+    <script src="../Scripts/SpisakNekretnina.js"></script>
+    <script src="../Scripts/StatistikaNekretnina.js"></script>
+    <title>Statistika Nekretnina</title>
+</head>
+<body>
+    <div>
+        <label for="periodi">Periodi (npr. 2000-2010,2010-2024):</label>
+        <input type="text" id="periodi" placeholder="Unesite periode">
+    </div>
+    <div>
+        <label for="rasponiCijena">Rasponi cijena (npr. 10000-150000,150000-1000000):</label>
+        <input type="text" id="rasponiCijena" placeholder="Unesite raspone cijena">
+    </div>
+    <button id="iscrtaj">Iscrtaj histogram</button>
+    <div id="chart-container"></div>
+</body>
+</html>

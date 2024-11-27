@@ -99,13 +99,14 @@ body {
 
     /* Stil za navigaciona dugmad (samo za prikaz ispod 600px) */
     .carousel-nav {
-        display: flex;
-        justify-content: space-between;
-        position: absolute;
-        top: 50%;
-        width: 100%;
-        transform: translateY(-50%);
-    }
+      display: flex;
+      justify-content: space-between;
+      position: absolute;
+      bottom: 0; /* Navigaciona dugmad se pozicioniraju pri dnu kontejnera */
+      width: 100%;
+      transform: translateY(0); /* Uklanja vertikalno centriranje */
+      padding: 10px 0; /* Razmak od sadržaja */
+  }
 
     .carousel-nav button {
         background-color: #333;

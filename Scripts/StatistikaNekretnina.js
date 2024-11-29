@@ -51,28 +51,46 @@ let StatistikaNekretnina = function (SpisakNekretnina) {
     };
 
     let histogramCijena = function (periodi, rasponiCijena) {
-        let rezultat = [];
-
+        let histogram = [];
+    
+        if (!SpisakNekretnina || !SpisakNekretnina.listaNekretnina) {
+            console.error("Lista nekretnina nije dostupna.");
+            return histogram;
+        }
+    
         periodi.forEach((period, indeksPerioda) => {
-            let nekretnineUPeriodu = SpisakNekretnina.listaNekretnina.filter(nekretnina =>
-                nekretnina.godina_objave >= period.od && nekretnina.godina_objave <= period.do
-            );
-
-            rasponiCijena.forEach((raspon, indeksRasponaCijena) => {
-                let brojNekretnina = nekretnineUPeriodu.filter(nekretnina =>
-                    nekretnina.cijena >= raspon.od && nekretnina.cijena <= raspon.do
-                ).length;
-
-                rezultat.push({
-                    indeksPerioda: indeksPerioda,
-                    indeksRasponaCijena: indeksRasponaCijena,
-                    brojNekretnina: brojNekretnina
+            rasponiCijena.forEach((raspon, indeksRaspona) => {
+                const brojNekretnina = SpisakNekretnina.listaNekretnina.filter(n => {
+                    let datumObjave = n.datum_objave;
+    
+                    if (datumObjave.endsWith('.')) {
+                        datumObjave = datumObjave.slice(0, -1);
+                    }
+    
+                    const deloviDatuma = datumObjave.split('.');
+                    const reformiraniDatum = `${deloviDatuma[2]}-${deloviDatuma[1]}-${deloviDatuma[0]}`;
+    
+                    const godinaObjave = new Date(reformiraniDatum).getFullYear();
+    
+                    if (isNaN(godinaObjave)) {
+                        console.error("Neispravan datum za nekretninu!");
+                        return false;
+                    }
+                    
+                    const godinaUnutarPerioda = godinaObjave >= period.od && godinaObjave <= period.do;
+                    const cijenaUnutarRaspona = n.cijena >= raspon.od && n.cijena <= raspon.do;                    
+                    return godinaUnutarPerioda && cijenaUnutarRaspona;
+                }).length;
+    
+                histogram.push({
+                    indeksPerioda,
+                    indeksRaspona,
+                    brojNekretnina
                 });
             });
         });
-        return rezultat;
+        return histogram;
     };
-
 
     return {
         init: init,

@@ -43,12 +43,21 @@ let StatistikaNekretnina = function (SpisakNekretnina) {
     
 
     let mojeNekretnine = function (korisnik) {
+        if (!korisnik) {
+            return "Nema korisnika.";
+        }
+    
         let nekretnineSaUpitima = SpisakNekretnina.listaNekretnina.filter(nekretnina =>
             nekretnina.upiti && nekretnina.upiti.some(upit => upit.korisnik === korisnik)
         );
-
+    
+        if (nekretnineSaUpitima.length === 0) {
+            return "Ovaj korisnik nema nekretnine.";
+        }
+    
         return nekretnineSaUpitima.sort((a, b) => b.upiti.length - a.upiti.length);
     };
+    
 
     let histogramCijena = function (periodi, rasponiCijena) {
         let histogram = [];
@@ -69,7 +78,6 @@ let StatistikaNekretnina = function (SpisakNekretnina) {
     
                     const deloviDatuma = datumObjave.split('.');
                     const reformiraniDatum = `${deloviDatuma[2]}-${deloviDatuma[1]}-${deloviDatuma[0]}`;
-    
                     const godinaObjave = new Date(reformiraniDatum).getFullYear();
     
                     if (isNaN(godinaObjave)) {

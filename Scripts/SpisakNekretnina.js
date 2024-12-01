@@ -46,10 +46,7 @@ let SpisakNekretnina = function () {
                 return false;
             }
             // Filtriranje po godini izgradnje
-            if (kriterij.min_godina_izgradnje && nekretnina.godina_izgradnje < kriterij.min_godina_izgradnje) {
-                return false;
-            }
-            if (kriterij.max_godina_izgradnje && nekretnina.godina_izgradnje > kriterij.max_godina_izgradnje) {
+            if (kriterij.godina_izgradnje && nekretnina.godina_izgradnje < kriterij.godina_izgradnje) {
                 return false;
             }
             // Filtriranje po datumu objave
@@ -59,12 +56,19 @@ let SpisakNekretnina = function () {
             if (kriterij.max_datum_objave && new Date(nekretnina.datum_objave) > new Date(kriterij.max_datum_objave)) {
                 return false;
             }
+            if (kriterij.datum_objave && new Date(nekretnina.datum_objave) != new Date(kriterij.datum_objave)) {
+                return false;
+            }    
             // Filtriranje po opisu
             if (kriterij.opis && !nekretnina.opis.toLowerCase().includes(kriterij.opis.toLowerCase())) {
                 return false;
             }
-            // Filtriranje po upitima
-            if (kriterij.upiti !== undefined && nekretnina.upiti !== kriterij.upiti) {
+            if (kriterij.id && nekretnina.id !== parseInt(kriterij.id)) {
+                return false;
+            }
+    
+            // Filtriranje po nazivu
+            if (kriterij.naziv && !nekretnina.naziv.toLowerCase().includes(kriterij.naziv.toLowerCase())) {
                 return false;
             }
             

@@ -22,70 +22,76 @@
         </select>
     </div>
 
-    <div id="modalUnos" style="position: fixed; bottom: 10%; left: 20%; transform: translateX(-50%); background-color: rgb(90, 164, 199); padding: 20px; box-shadow: 0px 4px 6px rgba(223, 29, 7, 0.1); border-radius: 10px; width: 400px; max-height: 60vh; overflow-y: auto;">
+    <div id="modalUnos" style="position: fixed; bottom: 5%; left: 20%; transform: translateX(-50%); background-color: rgb(90, 164, 199); padding: 20px; box-shadow: 0px 4px 6px rgba(223, 29, 7, 0.1); border-radius: 10px; width: 400px; max-height: 60vh; overflow-y: auto;">
         <h2>Filtriraj nekretnine</h2>
         <form id="filtriranjeUnos" style="display: flex; flex-direction: column; gap: 15px;">
             <div style="display: flex; flex-direction: column;">
                 <label for="id_filter">ID:</label>
-                <input type="number" id="id_filter" placeholder="Unesite ID korisnika">
+                <input type="number" id="id_filter" name="id_filter" placeholder="ID">
             </div>
     
             <div style="display: flex; flex-direction: column;">
                 <label for="tip_nekretnine_filter">Tip Nekretnine:</label>
-                <input type="text" id="tip_nekretnine_filter" placeholder="Stan, Kuća ili Poslovni Prostor">
+                <input type="text" id="tip_nekretnine_filter" name="tip_nekretnine_filter" placeholder="Stan, Kuća ili Poslovni Prostor">
             </div>
     
             <div style="display: flex; flex-direction: column;">
                 <label for="naziv_filter">Naziv:</label>
-                <input type="text" id="naziv_filter" placeholder="Unesite naziv nekretnine">
+                <input type="text" id="naziv_filter" name="naziv_filter" placeholder="Unesite naziv nekretnine">
             </div>
     
             <div style="display: flex; flex-direction: column;">
-                <label for="kvadratura_filter">Kvadratura:</label>
-                <input type="number" id="kvadratura_filter" step="0.01" placeholder="Unesite kvadraturu">
+                <label for="min_kvadratura_filter">Minimalna kvadratura:</label>
+                <input type="number" id="min_kvadratura_filter" name="min_kvadratura_filter" step="0.01" placeholder="min kvadratura">
+            </div>
+
+            <div style="display: flex; flex-direction: column;">
+                <label for="max_kvadratura_filter">Maksimalna kvadratura:</label>
+                <input type="number" id="max_kvadratura_filter" name="max_kvadratura_filter" step="0.01" placeholder="max kvadratura">
             </div>
     
             <div style="display: flex; flex-direction: column;">
-                <label for="cijena_filter">Cijena:</label>
-                <input type="number" id="cijena_filter" step="0.01" placeholder="Unesite cijenu">
+                <label for="min_cijena_filter">Minimalna cijena:</label>
+                <input type="number" id="min_cijena_filter" name="min_cijena_filter" step="0.01" placeholder="min cijena">
+            </div>
+
+            <div style="display: flex; flex-direction: column;">
+                <label for="max_cijena_filter">Maksimalna cijena:</label>
+                <input type="number" id="max_cijena_filter" name="max_cijena_filter" step="0.01" placeholder="max cijena">
             </div>
     
             <div style="display: flex; flex-direction: column;">
                 <label for="tip_grijanja_filter">Grijanje:</label>
-                <input type="text" id="tip_grijanja_filter" placeholder="Unesite tip grijanja">
+                <input type="text" id="tip_grijanja_filter" name="tip_grijanja_filter" placeholder="Unesite tip grijanja">
             </div>
     
             <div style="display: flex; flex-direction: column;">
                 <label for="lokacija_filter">Lokacija:</label>
-                <input type="text" id="lokacija_filter" placeholder="Unesite lokaciju">
+                <input type="text" id="lokacija_filter" name="lokacija_filter" placeholder="Unesite lokaciju">
             </div>
     
             <div style="display: flex; flex-direction: column;">
                 <label for="godina_izgradnje_filter">Godina Izgradnje:</label>
-                <input type="number" id="godina_izgradnje_filter" placeholder="Unesite godinu izgradnje">
+                <input type="number" id="godina_izgradnje_filter" name="godina_izgradnje_filter" placeholder="Unesite godinu izgradnje">
             </div>
     
             <div style="display: flex; flex-direction: column;">
                 <label for="datum_objave_filter">Datum Objave:</label>
-                <input type="date" id="datum_objave_filter">
+                <input type="date" id="datum_objave_filter" name="datum_objave_filter">
             </div>
     
             <div style="display: flex; flex-direction: column;">
                 <label for="opis_filter">Opis:</label>
-                <textarea id="opis_filter" rows="4" placeholder="Unesite opis nekretnine"></textarea>
+                <textarea id="opis_filter" name="opis_filter" rows="4" placeholder="Unesite opis nekretnine"></textarea>
             </div>
     
             <div style="display: flex; flex-direction: column;">
-                <label for="upiti_filter">Upiti:</label>
-                <input type="text" id="upiti_filter" placeholder="Unesite upit za nekretninu">
-            </div>
-    
-            <div style="display: flex; flex-direction: column;">
+                <button type="submit">Submit</button>
                 <button type="button" id="closeModal_filter">Zatvori</button>
             </div>
         </form>
     </div>
-        
+    
     <div id="prosjecnaKvadratura">
     </div>
 
@@ -95,10 +101,10 @@
     </div>
 
     <div id="histogramCijena" style="display:none;">
-        <label for="periodi">Unesite periode (format: od-do):</label>
+        <label for="periodi">Unesite periode:</label>
         <input type="text" id="periodi" placeholder="npr. 2000-2010,2011-2020">
         <br>
-        <label for="rasponiCijena">Unesite raspone cijena (format: od-do):</label>
+        <label for="rasponiCijena">Unesite raspone cijena:</label>
         <input type="text" id="rasponiCijena" placeholder="npr. 50000-100000,100001-150000">
     </div>
 
@@ -114,7 +120,7 @@
         <button id="dodajKorisnika">Dodaj novog korisnika</button>
     </div>
 
-    <div id="modalKorisnik" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); border-radius: 10px; width: 500px; max-height: 80vh; overflow-y: auto;">
+    <div id="modalKorisnik" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgb(209, 124, 235); padding: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); border-radius: 10px; width: 500px; max-height: 80vh; overflow-y: auto;">
         <h2 style="font-size: 1.5rem; text-align: center;">Dodaj korisnika</h2>
         <form id="korisnikForma" style="display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
             <div style="display: flex; flex-direction: column;">
@@ -144,7 +150,7 @@
         </form>
     </div>
     
-    <div id="modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); border-radius: 10px; width: 500px; max-height: 80vh; overflow-y: auto;">
+    <div id="modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgb(210, 217, 14); padding: 20px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); border-radius: 10px; width: 500px; max-height: 80vh; overflow-y: auto;">
         <h2>Dodaj novu nekretninu</h2>
         <form id="nekretnineForma" style="display: flex; flex-direction: column; gap: 15px;">
             <div style="display: flex; flex-direction: column;">

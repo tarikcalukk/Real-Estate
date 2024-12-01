@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     nekretnine.init(listaNekretnina, listaKorisnika);
     let statistika = StatistikaNekretnina(nekretnine);
 
+    document.getElementById('iscrtaj').style.display = 'none';
+    document.getElementById("chart-container").style.display = "none";
     document.getElementById('dodajNekretninu').addEventListener('click', () => {
         document.getElementById('modal').style.display = 'block';
     });
@@ -97,38 +99,78 @@ document.addEventListener('DOMContentLoaded', () => {
         if (izbor === "prosjecnaKvadratura") {
             document.getElementById("prosjecnaKvadratura").style.display = "block";
             document.getElementById("modalUnos").style.display = "block";
+            document.getElementById('iscrtaj').style.display = 'none';
         }
         else if (izbor === "outlier") {
             document.getElementById("outlier").style.display = "block";
             document.getElementById("modalUnos").style.display = "block";
+            document.getElementById("chart-container").style.display = "none";
         }
         else if (izbor === "histogramCijena") {
+            document.getElementById("chart-container").style.display = "block";
             document.getElementById("histogramCijena").style.display = "block";
             document.getElementById("periodi").value = ""; 
             document.getElementById("rasponiCijena").value = "";
             document.getElementById("modalUnos").style.display = "none";
+            document.getElementById('iscrtaj').style.display = 'block';
 
         } 
         else if (izbor === "mojeNekretnine") {
             document.getElementById("mojeNekretnine").style.display = "block";
             document.getElementById("modalUnos").style.display = "none";
+            document.getElementById("chart-container").style.display = "none";
+            document.getElementById('iscrtaj').style.display = 'block';
         }
     });
 
-    let kriterij = {};
-
+    document.getElementById("filtriranjeUnos").addEventListener("submit", function (event) {
+        event.preventDefault();
+        let kriterij = {};
+        
+        const formData = new FormData(event.target);
+    
+        formData.forEach((value, key) => {
+            if (value.trim() !== "") {
+                let keyWithoutFilter = key.replace('_filter', '');
+                
+                if (keyWithoutFilter.includes('datum_objave')) {
+                    let date = new Date(value);
+                    let day = String(date.getDate()).padStart(2, '0');
+                    let month = String(date.getMonth() + 1).padStart(2, '0');
+                    let year = date.getFullYear();
+                
+                    kriterij[keyWithoutFilter] = `${day}.${month}.${year}.`;
+                } else {
+                    kriterij[keyWithoutFilter] = value;
+                }
+            }
+        });
+    
+        const izbor = izborStatistike.value;
+    
+        if (izbor === 'outlier') {
+            const nazivSvojstva = document.getElementById('nazivSvojstva').value.trim();
+            if (!nazivSvojstva) {
+                alert('Molimo unesite naziv svojstva za outlier analizu!');
+                return;
+            }
+    
+            const outlieri = statistika.outlier(kriterij, nazivSvojstva);
+    
+            if (outlieri) {
+                alert(`Outlier nekretnina: ${JSON.stringify(outlieri)}`);
+            } else {
+                alert('Nema nekretnina koje odgovaraju kriterijima za outlier analizu.');
+            }
+        } else {
+            const prosjecnaKvadratura = statistika.prosjecnaKvadratura(kriterij);
+            alert(`Prosječna kvadratura: ${prosjecnaKvadratura}`);
+        }
+    });
+    
     iscrtajButton.addEventListener('click', () => {
     const izbor = izborStatistike.value;
-
-    if (izbor === 'prosjecnaKvadratura') {
-        const prosjek = statistika.prosjecnaKvadratura(kriterij);
-        alert(`Prosječna kvadratura: ${prosjek}`);
-    }
-    else if (izbor === 'outlier') {
-        const outlieri = statistika.outlieri();
-        alert(`Outlieri: ${JSON.stringify(outlieri)}`);
-    } 
-    else if (izbor === 'mojeNekretnine') {
+    if (izbor === 'mojeNekretnine') {
         const id = prompt("Unesite ID korisnika:");
         const ime = prompt("Unesite ime korisnika:");
         const prezime = prompt("Unesite prezime korisnika:");

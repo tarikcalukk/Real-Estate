@@ -3,7 +3,7 @@
 body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
-    background-color: #f4f7f6;
+    background-color: #bdb6b6;
 }
 
 iframe {
@@ -19,7 +19,7 @@ iframe {
 }
 
 .glavnaVijest {
-    background-color: #F8D7A6;
+    background-color: #bdb6b6;
     padding: 10px;
     box-sizing: border-box;
     border-radius: 12px;

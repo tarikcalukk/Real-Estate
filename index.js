@@ -101,7 +101,7 @@ app.post('/login', async (req, res) => {
     let loginStatus = "neuspješno";
 
     for (const korisnik of korisnici) {
-      if (korisnik.username === jsonObj.username) {
+      if (korisnik.username == jsonObj.username) {
         const isPasswordMatched = await bcrypt.compare(jsonObj.password, korisnik.password);
 
         if (isPasswordMatched) {
@@ -115,8 +115,7 @@ app.post('/login', async (req, res) => {
     }
 
     // Log the attempt
-    const logEntry = `[${new Date().toISOString()}] - username: "${jsonObj.username}" - status: "${loginStatus}"
-`;
+    const logEntry = `[${new Date().toISOString()}] - username: "${jsonObj.username}" - status: "${loginStatus}"`;
     await fs.appendFile(LOG_FILE, logEntry);
 
     if (found) {
@@ -228,6 +227,14 @@ app.post('/upit', async (req, res) => {
     if (!nekretnina) {
       // Property not found
       return res.status(400).json({ greska: `Nekretnina sa id-em ${nekretnina_id} ne postoji` });
+    }
+
+    // Count how many queries the user has already made for the same property
+    const userQueriesForProperty = nekretnina.upiti.filter(upit => upit.korisnik_id === loggedInUser.id).length;
+
+    // Check if the user has made more than 3 queries for the same property
+    if (userQueriesForProperty >= 3) {
+      return res.status(429).json({ greska: 'Previse upita za istu nekretninu.' });
     }
 
     // Add a new query to the property's queries array
@@ -408,6 +415,142 @@ app.post('/marketing/osvjezi/klikovi', async (req, res) => {
   } catch (error) {
     console.error('Greška prilikom čitanja ili pisanja JSON datoteke:', error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/nekretnine/top5', async(req, res) => {
+  const lokacija = req.query.lokacija;
+
+  if (!lokacija) {
+      return res.status(400).json({ error: 'Lokacija nije specificirana.' });
+  }
+
+  try {
+    const nekretnine = await readJsonFile('nekretnine');
+
+    const filteredNekretnine = nekretnine
+      .filter(nekretnina => nekretnina.lokacija === lokacija)
+      .sort((a, b) => new Date(b.datum_objave) - new Date(a.datum_objave))
+      .slice(0, 5);
+
+    return res.status(200).json(filteredNekretnine);
+  } catch (error) {
+    return res.status(500).json({ error: 'Greška prilikom obrade podataka.' });
+  }
+});
+
+// Nova ruta za dobijanje svih upita za loginovanog korisnika
+app.get('/upiti/moji', async (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ greska: 'Neautorizovan pristup' });
+  }
+
+  try {
+    const users = await readJsonFile('korisnici');
+    const nekretnine = await readJsonFile('nekretnine');
+
+    const loggedInUser = users.find(user => user.username === req.session.user.username);
+
+    if (!loggedInUser) {
+      return res.status(404).json({ greska: 'Korisnik nije pronađen' });
+    }
+
+    // Filtrirajte upite koje je poslao logovani korisnik
+    const userQueries = nekretnine
+      .flatMap(nekretnina => nekretnina.upiti)
+      .filter(upit => upit.korisnik_id === loggedInUser.id)
+
+    // Ako korisnik nema upite, vraćamo prazan niz
+    if (userQueries.length === 0) {
+      return res.status(404).json([]);
+    }
+
+    const result = userQueries.map(upit => {
+      // Pronađi nekretninu kojoj upit pripada
+      const nekretnina = nekretnine.find(n => n.upiti.some(u => u.korisnik_id === upit.korisnik_id && u.tekst_upita === upit.tekst_upita));
+      return {
+        id_nekretnine: nekretnina.id,
+        tekst_upita: upit.tekst_upita
+      };
+    });
+
+    return res.status(200).json(result);
+
+  } catch (error) {
+    console.error('Greška prilikom obrade upita:', error);
+    return res.status(500).json({ greska: 'Greška na serveru' });
+  }
+});
+
+// Nova ruta za vraćanje detalja o nekretnini
+app.get('/nekretnina/:id', async (req, res) => {
+  const nekretninaId = parseInt(req.params.id, 10);  // Preuzimamo id iz parametara URL-a
+
+  try {
+    const nekretnine = await readJsonFile('nekretnine');
+
+    // Pronalazak nekretnine sa zadanim id-em
+    const nekretnina = nekretnine.find(n => n.id === nekretninaId);
+
+    if (!nekretnina) {
+      return res.status(404).json({ greska: `Nekretnina sa id-em ${nekretninaId} nije pronađena` });
+    }
+
+    // Skraćujemo listu upita na poslednja 3
+    const lastThreeQueries = nekretnina.upiti.slice(-3);
+
+    // Vraćamo detalje o nekretnini, uključujući samo posljednja 3 upita
+    return res.status(200).json({
+      id: nekretnina.id,
+      tip_nekretnine: nekretnina.tip_nekretnine,
+      naziv: nekretnina.naziv,
+      kvadratura: nekretnina.kvadratura,
+      cijena: nekretnina.cijena,
+      tip_grijanja: nekretnina.tip_grijanja,
+      lokacija: nekretnina.lokacija,
+      godina_izgradnje: nekretnina.godina_izgradnje,
+      datum_objave: nekretnina.datum_objave,
+      opis: nekretnina.opis,
+      upiti: lastThreeQueries
+    });
+
+  } catch (error) {
+    console.error('Greška prilikom obrade nekretnine:', error);
+    return res.status(500).json({ greska: 'Greška na serveru' });
+  }
+});
+
+// Nova ruta za vraćanje sljedećih 3 upita za nekretninu
+app.get('/next/upiti/nekretnina:id', async (req, res) => {
+  const nekretninaId = parseInt(req.params.id, 10);
+  const page = parseInt(req.query.page, 10);  // Preuzimamo broj stranice iz query parametra
+
+  if (page < 1) {
+    return res.status(400).json({ greska: 'Page mora biti >= 1' });
+  }
+
+  try {
+    const nekretnine = await readJsonFile('nekretnine');
+
+    const nekretnina = nekretnine.find(n => n.id === nekretninaId);
+
+    if (!nekretnina) {
+      return res.status(404).json({ greska: `Nekretnina sa id-em ${nekretninaId} nije pronađena` });
+    }
+
+    // Računanje početne pozicije za upite na osnovu stranice
+    const startIndex = page * 3;
+    const nextUpiti = nekretnina.upiti.slice(startIndex, startIndex + 3);  // Uzimamo sljedeća 3 upita
+
+    if (nextUpiti.length === 0) {
+      return res.status(404).json([]);
+    }
+
+    return res.status(200).json(nextUpiti);
+    
+  } catch (error) {
+    console.error('Greška prilikom obrade upita:', error);
+    return res.status(500).json({ greska: 'Greška na serveru' });
   }
 });
 

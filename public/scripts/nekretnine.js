@@ -1,7 +1,7 @@
 function spojiNekretnine(divReferenca, instancaModula, tip_nekretnine) {
     // pozivanje metode za filtriranje
     const filtriraneNekretnine = instancaModula.filtrirajNekretnine({ tip_nekretnine: tip_nekretnine });
-    
+
     // iscrtavanje elemenata u divReferenca element
 
     // Ciscenje svih elemenata liste
@@ -12,16 +12,30 @@ function spojiNekretnine(divReferenca, instancaModula, tip_nekretnine) {
     } else {
         filtriraneNekretnine.forEach(nekretnina => {
             const nekretninaElement = document.createElement('div');
-            if(tip_nekretnine==="Stan"){
-                nekretninaElement.classList.add('nekretnina');
+            if (tip_nekretnine === "Stan") {
+                nekretninaElement.classList.add('nekretnina', 'stan');
+                nekretninaElement.id = `${nekretnina.id}`;
             }
-            else if(tip_nekretnine==="Kuća"){
-                nekretninaElement.classList.add('nekretnina','kuca');
+            else if (tip_nekretnine === "Kuća") {
+                nekretninaElement.classList.add('nekretnina', 'kuca');
+                nekretninaElement.id = `${nekretnina.id}`;
             }
-            else{
-                nekretninaElement.classList.add('nekretnina','pp');
+            else {
+                nekretninaElement.classList.add('nekretnina', 'pp');
+                nekretninaElement.id = `${nekretnina.id}`;
             }
-            
+
+            // Added search and click count divs
+            const pretrageDiv = document.createElement('div');
+            pretrageDiv.id = `pretrage-${nekretnina.id}`;
+            pretrageDiv.textContent = `pretrage: ${nekretnina.pretrage || 0}`;
+            nekretninaElement.appendChild(pretrageDiv);
+
+            const klikoviDiv = document.createElement('div');
+            klikoviDiv.id = `klikovi-${nekretnina.id}`;
+            klikoviDiv.textContent = `klikovi: ${nekretnina.klikovi || 0}`;
+            nekretninaElement.appendChild(klikoviDiv);
+
             const slikaElement = document.createElement('img');
             slikaElement.classList.add('slika-nekretnine');
             slikaElement.src = `../Resources/${nekretnina.id}.jpg`;
@@ -42,11 +56,14 @@ function spojiNekretnine(divReferenca, instancaModula, tip_nekretnine) {
             nekretninaElement.appendChild(cijenaElement);
 
             const detaljiDugme = document.createElement('a');
-            detaljiDugme.href = '../HTML/detalji.html'; // hardkodiran html
+            //detaljiDugme.href = '../HTML/detalji.html'; // hardkodiran html
             detaljiDugme.classList.add('detalji-dugme');
             detaljiDugme.textContent = 'Detalji';
+            detaljiDugme.addEventListener('click', function () {
+                const idNekretnine = nekretnina.id;
+                MarketingAjax.klikNekretnina(idNekretnine);
+            });
             nekretninaElement.appendChild(detaljiDugme);
-
 
             // Dodavanje kreiranog elementa u divReferenci
             divReferenca.appendChild(nekretninaElement);
@@ -54,139 +71,61 @@ function spojiNekretnine(divReferenca, instancaModula, tip_nekretnine) {
     }
 }
 
+const listaNekretnina = []
 
-const listaNekretnina = [{
-    id: 1,
-    tip_nekretnine: "Stan",
-    naziv: "Useljiv stan Sarajevo",
-    kvadratura: 58,
-    cijena: 232000,
-    tip_grijanja: "plin",
-    lokacija: "Novo Sarajevo",
-    godina_izgradnje: 2019,
-    datum_objave: "01.10.2023.",
-    opis: "Sociis natoque penatibus.",
-    upiti: [{
-        korisnik_id: 1,
-        tekst_upita: "Nullam eu pede mollis pretium."
-    },
-    {
-        korisnik_id: 2,
-        tekst_upita: "Phasellus viverra nulla."
-    }]
-},{
-    id: 1,
-    tip_nekretnine: "Stan",
-    naziv: "Useljiv stan Sarajevo",
-    kvadratura: 58,
-    cijena: 32000,
-    tip_grijanja: "plin",
-    lokacija: "Novo Sarajevo",
-    godina_izgradnje: 2019,
-    datum_objave: "01.10.2009.",
-    opis: "Sociis natoque penatibus.",
-    upiti: [{
-        korisnik_id: 1,
-        tekst_upita: "Nullam eu pede mollis pretium."
-    },
-    {
-        korisnik_id: 2,
-        tekst_upita: "Phasellus viverra nulla."
-    }]
-},{
-    id: 1,
-    tip_nekretnine: "Stan",
-    naziv: "Useljiv stan Sarajevo",
-    kvadratura: 58,
-    cijena: 232000,
-    tip_grijanja: "plin",
-    lokacija: "Novo Sarajevo",
-    godina_izgradnje: 2019,
-    datum_objave: "01.10.2003.",
-    opis: "Sociis natoque penatibus.",
-    upiti: [{
-        korisnik_id: 1,
-        tekst_upita: "Nullam eu pede mollis pretium."
-    },
-    {
-        korisnik_id: 2,
-        tekst_upita: "Phasellus viverra nulla."
-    }]
-},
-{
-    id: 2,
-    tip_nekretnine: "Kuća",
-    naziv: "Mali poslovni prostor",
-    kvadratura: 20,
-    cijena: 70000,
-    tip_grijanja: "struja",
-    lokacija: "Centar",
-    godina_izgradnje: 2005,
-    datum_objave: "20.08.2023.",
-    opis: "Magnis dis parturient montes.",
-    upiti: [{
-        korisnik_id: 2,
-        tekst_upita: "Integer tincidunt."
-    }
-    ]
-},
-{
-    id: 3,
-    tip_nekretnine: "Kuća",
-    naziv: "Mali poslovni prostor",
-    kvadratura: 20,
-    cijena: 70000,
-    tip_grijanja: "struja",
-    lokacija: "Centar",
-    godina_izgradnje: 2005,
-    datum_objave: "20.08.2023.",
-    opis: "Magnis dis parturient montes.",
-    upiti: [{
-        korisnik_id: 2,
-        tekst_upita: "Integer tincidunt."
-    }
-    ]
-},
-{
-    id: 4,
-    tip_nekretnine: "Kuća",
-    naziv: "Mali poslovni prostor",
-    kvadratura: 20,
-    cijena: 70000,
-    tip_grijanja: "struja",
-    lokacija: "Centar",
-    godina_izgradnje: 2005,
-    datum_objave: "20.08.2023.",
-    opis: "Magnis dis parturient montes.",
-    upiti: [{
-        korisnik_id: 2,
-        tekst_upita: "Integer tincidunt."
-    }
-    ]
-}]
-
-const listaKorisnika = [{
-    id: 1,
-    ime: "Neko",
-    prezime: "Nekic",
-    username: "username1",
-},
-{
-    id: 2,
-    ime: "Neko2",
-    prezime: "Nekic2",
-    username: "username2",
-}]
+const listaKorisnika = []
 
 const divStan = document.getElementById("stan");
 const divKuca = document.getElementById("kuca");
 const divPp = document.getElementById("pp");
 
-//instanciranje modula
+// Instanciranje modula
 let nekretnine = SpisakNekretnina();
-nekretnine.init(listaNekretnina, listaKorisnika);
 
-//pozivanje funkcije
-spojiNekretnine(divStan, nekretnine, "Stan");
-spojiNekretnine(divKuca, nekretnine, "Kuća");
-spojiNekretnine(divPp, nekretnine, "Poslovni prostor");
+// Pozivamo funkciju za dohvat nekretnina sa servera
+PoziviAjax.getNekretnine((error, listaNekretnina) => {
+    if (error) {
+        console.error("Greška prilikom dohvatanja nekretnina sa servera:", error);
+    } else {
+        // Inicijalizacija modula sa dobavljenim podacima
+        nekretnine.init(listaNekretnina, listaKorisnika);
+
+        // Pozivamo funkciju za prikaz nekretnina
+        spojiNekretnine(divStan, nekretnine, "Stan");
+        spojiNekretnine(divKuca, nekretnine, "Kuća");
+        spojiNekretnine(divPp, nekretnine, "Poslovni prostor");
+    }
+});
+
+function filtrirajNekretnine(filtriraneNekretnine) {
+    const filtriraneNekretnineInstance = SpisakNekretnina();
+    filtriraneNekretnineInstance.init(filtriraneNekretnine, listaKorisnika);
+
+    spojiNekretnine(divStan, filtriraneNekretnineInstance, "Stan");
+    spojiNekretnine(divKuca, filtriraneNekretnineInstance, "Kuća");
+    spojiNekretnine(divPp, filtriraneNekretnineInstance, "Poslovni prostor");
+}
+
+function filtrirajOnClick() {
+    const kriterij = {
+        min_cijena: parseFloat(document.getElementById('minCijena').value) || 0,
+        max_cijena: parseFloat(document.getElementById('maxCijena').value) || Infinity,
+        min_kvadratura: parseFloat(document.getElementById('minKvadratura').value) || 0,
+        max_kvadratura: parseFloat(document.getElementById('maxKvadratura').value) || Infinity
+    };
+
+    const filtriraneNekretnine = nekretnine.filtrirajNekretnine(kriterij);
+
+    MarketingAjax.novoFiltriranje(
+        filtriraneNekretnine.map(nekretnina => nekretnina.id)
+    );
+
+    filtrirajNekretnine(filtriraneNekretnine);
+}
+
+document.getElementById('dugmePretraga').addEventListener('click', filtrirajOnClick);
+
+setInterval(() => {
+    MarketingAjax.osvjeziPretrage(document.getElementById('divNekretnine'));
+    MarketingAjax.osvjeziKlikove(document.getElementById('divNekretnine'));
+}, 500);

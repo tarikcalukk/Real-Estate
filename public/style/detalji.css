@@ -140,9 +140,3 @@ iframe {
     margin: 10px 0;
   }
 }
-
-@media (min-width: 601px) {
-  .carousel-nav {
-    display: none;
-  }
-}

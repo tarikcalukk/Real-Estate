@@ -204,7 +204,7 @@ Allows logged user to make a request for a property
 */
 app.post('/upit', async (req, res) => {
   // Check if the user is authenticated
-  if (!req.session.user) {
+  if (!req.session.username) {
     // User is not logged in
     return res.status(401).json({ greska: 'Neautorizovan pristup' });
   }
@@ -220,7 +220,7 @@ app.post('/upit', async (req, res) => {
     const nekretnine = await readJsonFile('nekretnine');
 
     // Find the user by username
-    const loggedInUser = users.find((user) => user.username === req.session.user.username);
+    const loggedInUser = users.find((user) => user.username === req.session.username);
 
     // Check if the property with nekretnina_id exists
     const nekretnina = nekretnine.find((property) => property.id === nekretnina_id);
@@ -442,7 +442,7 @@ app.get('/nekretnine/top5', async(req, res) => {
 
 // Nova ruta za dobijanje svih upita za loginovanog korisnika
 app.get('/upiti/moji', async (req, res) => {
-  if (!req.session.user) {
+  if (!req.session.username) {
     return res.status(401).json({ greska: 'Neautorizovan pristup' });
   }
 
@@ -450,7 +450,7 @@ app.get('/upiti/moji', async (req, res) => {
     const users = await readJsonFile('korisnici');
     const nekretnine = await readJsonFile('nekretnine');
 
-    const loggedInUser = users.find(user => user.username === req.session.user.username);
+    const loggedInUser = users.find(user => user.username === req.session.username);
 
     if (!loggedInUser) {
       return res.status(404).json({ greska: 'Korisnik nije pronađen' });

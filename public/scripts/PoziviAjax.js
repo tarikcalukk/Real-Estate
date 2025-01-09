@@ -187,24 +187,66 @@ const PoziviAjax = (() => {
     }
 
     function getTop5Nekretnina(lokacija, fnCallback) {
-        const url = `/nekretnine/top5?lokacija=${encodeURIComponent(lokacija)}`;
-        ajaxRequest('GET', url, null, fnCallback);
-    }
+        ajaxRequest('GET', `/nekretnine/top5?lokacija=${encodeURIComponent(lokacija)}`, null, (error, data) => {
+            if (error) {
+                fnCallback(error, null);
+            } else {
+                try {
+                    const top5Nekretnina = JSON.parse(data);
+                    fnCallback(null, top5Nekretnina);
+                } catch (parseError) {
+                    fnCallback(parseError, null);
+                }
+            }
+        });
+    }    
 
     function getMojiUpiti(fnCallback) {
-        const url = '/upiti/moji';
-        ajaxRequest('GET', url, null, fnCallback);
-    }
+        ajaxRequest('GET', '/upiti/moji', null, (error, data) => {
+            if (error) {
+                fnCallback(error, null);
+            } else {
+                try {
+                    const upiti = JSON.parse(data);
+                    fnCallback(null, upiti);
+                } catch (parseError) {
+                    fnCallback(parseError, null);
+                }
+            }
+        });
+    } 
 
     function getNekretnina(nekretnina_id, fnCallback) {
         const url = `/nekretnina/${encodeURIComponent(nekretnina_id)}`;
-        ajaxRequest('GET', url, null, fnCallback);
-    }
+        ajaxRequest('GET', url, null, (error, data) => {
+            if (error) {
+                fnCallback(error, null);
+            } else {
+                try {
+                    const nekretnina = JSON.parse(data);
+                    fnCallback(null, nekretnina);
+                } catch (parseError) {
+                    fnCallback(parseError, null);
+                }
+            }
+        });
+    }    
 
     function getNextUpiti(nekretnina_id, page, fnCallback) {
-        const url = `/next/upiti/nekretnina${encodeURIComponent(nekretnina_id)}?page=${encodeURIComponent(page)}`;
-        ajaxRequest('GET', url, null, fnCallback);
-    }
+    const url = `/next/upiti/nekretnina${encodeURIComponent(nekretnina_id)}?page=${encodeURIComponent(page)}`;
+    ajaxRequest('GET', url, null, (error, data) => {
+        if (error) {
+            fnCallback(error, null);
+        } else {
+            try {
+                const nextUpiti = JSON.parse(data);
+                fnCallback(null, nextUpiti);
+            } catch (parseError) {
+                fnCallback(parseError, null);
+            }
+        }
+    });
+}
 
     return {
         postLogin: impl_postLogin,

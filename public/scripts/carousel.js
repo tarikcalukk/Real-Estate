@@ -5,6 +5,7 @@ function postaviCarousel(glavniElement, sviElementi, indeks = 0, nekretninaId = 
 
     let trenutnaStranica = 1;
     let kraj = false;
+    let brojUcitavanja = 0;
 
     function azurirajPrikaz() {
         glavniElement.innerHTML = sviElementi[indeks].innerHTML;
@@ -19,8 +20,7 @@ function postaviCarousel(glavniElement, sviElementi, indeks = 0, nekretninaId = 
         indeks = (indeks + 1) % sviElementi.length;
         azurirajPrikaz();
 
-        // Proveravamo da li smo na poslednjem elementu
-        if (indeks === sviElementi.length - 1 && nekretninaId && !kraj) {
+        if (indeks === 2 && nekretninaId && !kraj) {
             PoziviAjax.getNextUpiti(nekretninaId, trenutnaStranica, (error, noviUpiti) => {
                 if (error || !noviUpiti || noviUpiti.length === 0) {
                     kraj = true; // Svi upiti su učitani
@@ -31,9 +31,14 @@ function postaviCarousel(glavniElement, sviElementi, indeks = 0, nekretninaId = 
                         noviElement.className = 'upit';
                         noviElement.innerHTML = `<p>${upit.tekst_upita}</p>`;
                         sviElementi.push(noviElement);
+                        brojUcitavanja++;
                     });
                 }
             });
+        }
+
+        if (kraj) {
+            console.log("Svi upiti su učitani, nema više podataka.");
         }
     }
 

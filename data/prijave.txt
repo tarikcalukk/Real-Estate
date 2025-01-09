@@ -1,2 +1,0 @@
-[2025-01-09T22:51:06.074Z] - username: "username1" - status: "uspješno"
-[2025-01-09T22:53:39.782Z] - username: "username1" - status: "uspješno"

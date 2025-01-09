@@ -92,6 +92,8 @@ app.post('/login', async (req, res) => {
     const userRateLimit = rateLimit[jsonObj.username];
 
     if (currentTime < userRateLimit.blockedUntil) {
+      const logEntry = `[${new Date().toISOString()}] - username: "${jsonObj.username}" - status: "neuspješno"\n`;
+      await fs.appendFile(LOG_FILE, logEntry);
       return res.status(429).json({ greska: "Previse neuspjesnih pokusaja. Pokusajte ponovo za 1 minutu." });
     }
 
@@ -102,7 +104,7 @@ app.post('/login', async (req, res) => {
 
     for (const korisnik of korisnici) {
       if (korisnik.username == jsonObj.username) {
-        const isPasswordMatched = await bcrypt.compare(jsonObj.password, korisnik.password);
+        const isPasswordMatched = jsonObj.password == korisnik.password;
 
         if (isPasswordMatched) {
           req.session.username = korisnik.username;
@@ -114,8 +116,7 @@ app.post('/login', async (req, res) => {
       }
     }
 
-    // Log the attempt
-    const logEntry = `[${new Date().toISOString()}] - username: "${jsonObj.username}" - status: "${loginStatus}"`;
+    const logEntry = `[${new Date().toISOString()}] - username: "${jsonObj.username}" - status: "${loginStatus}"\n`;
     await fs.appendFile(LOG_FILE, logEntry);
 
     if (found) {

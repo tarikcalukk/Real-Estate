@@ -25,6 +25,7 @@ function spojiNekretnine(divReferenca, instancaModula, tip_nekretnine) {
                 nekretninaElement.id = `${nekretnina.id}`;
             }
 
+            // Added search and click count divs
             const pretrageDiv = document.createElement('div');
             pretrageDiv.id = `pretrage-${nekretnina.id}`;
             pretrageDiv.textContent = `pretrage: ${nekretnina.pretrage || 0}`;
@@ -55,7 +56,7 @@ function spojiNekretnine(divReferenca, instancaModula, tip_nekretnine) {
             nekretninaElement.appendChild(cijenaElement);
 
             const detaljiDugme = document.createElement('a');
-            detaljiDugme.href = '../html/detalji.html';
+            detaljiDugme.href = `../html/detalji.html?id=${nekretnina.id}`;
             detaljiDugme.classList.add('detalji-dugme');
             detaljiDugme.textContent = 'Detalji';
             detaljiDugme.addEventListener('click', function () {

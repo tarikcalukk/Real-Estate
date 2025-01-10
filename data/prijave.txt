@@ -1,0 +1,1 @@
+[2025-01-10T10:00:02.945Z] - username: "username1" - status: "uspješno"

@@ -36,10 +36,6 @@ function postaviCarousel(glavniElement, sviElementi, indeks = 0, nekretninaId = 
                 }
             });
         }
-
-        if (kraj) {
-            console.log("Svi upiti su učitani, nema više podataka.");
-        }
     }
 
     azurirajPrikaz();

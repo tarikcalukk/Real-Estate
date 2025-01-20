@@ -113,6 +113,17 @@ iframe {
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s;
+  position: relative;
+}
+
+.carousel-nav button:first-child {
+  margin-left: 20px;
+  margin-bottom: 15px;
+}
+
+.carousel-nav button:last-child {
+  margin-right: 20px;
+  margin-bottom: 15px;
 }
 
 .carousel-nav button:hover {

@@ -23,33 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('#kolona2 p:nth-child(1)').textContent = `Godina izgradnje: ${nekretnina.godina_izgradnje}`;
             document.querySelector('#kolona2 p:nth-child(2)').textContent = `Datum objave oglasa: ${nekretnina.datum_objave}`;
             document.querySelector('#opis p').textContent = nekretnina.opis;
+
+            if (nekretnina.upiti && nekretnina.upiti.length > 0) {
+                carousel = postaviCarousel(upitiContainer, nekretnina.upiti, 0, id);
+            } else {
+                upitiContainer.innerHTML = '<p>Nema dostupnih upita za ovu nekretninu.</p>';
+            }
         });
     } else {
         alert('ID nekretnine nije definisan.');
     }
-
-    // Učitavanje upita za logovanog korisnika
-    PoziviAjax.getMojiUpiti((error, upiti) => {
-        if (error) {
-            alert('Došlo je do greške prilikom dohvaćanja upita.');
-            return;
-        }
-
-        const sviElementi = upiti.map(upit => {
-            const div = document.createElement('div');
-            div.className = 'upit';
-            div.innerHTML = `
-                <p>${upit.tekst_upita}</p>
-            `;
-            return div;
-        });
-
-        if (sviElementi.length > 0) {
-            carousel = postaviCarousel(upitiContainer, sviElementi, 0, id);
-        } else {
-            upitiContainer.innerHTML = '<p>Nema dostupnih upita za prikaz.</p>';
-        }
-    });
 
     if (prevButton && nextButton) {
         prevButton.addEventListener('click', () => {
@@ -63,27 +46,19 @@ document.addEventListener('DOMContentLoaded', () => {
     lokacijaLink.addEventListener('click', (e) => {
         e.preventDefault();
         const lokacija = lokacijaLink.textContent;
-
+    
         PoziviAjax.getTop5Nekretnina(lokacija, (error, nekretnine) => {
             if (error) {
                 alert('Došlo je do greške prilikom dohvaćanja nekretnina.');
                 return;
             }
-
-            upitiContainer.innerHTML = '';
-            nekretnine.forEach(nekretnina => {
-                const div = document.createElement('div');
-                div.className = 'upit';
-                div.innerHTML = `
-                    <p><strong>${nekretnina.naziv}</strong></p>
-                    <p>${nekretnina.opis}</p>
-                `;
-                upitiContainer.appendChild(div);
-            });
-
-            if (carousel) {
-                carousel.update();
-            }
+    
+            // Spremi nekretnine u `sessionStorage` za prenos na novu stranicu
+            sessionStorage.setItem('top5Nekretnina', JSON.stringify(nekretnine));
+            sessionStorage.setItem('lokacija', lokacija);
+    
+            // Preusmjeri na novu stranicu
+            window.location.href = 'top5.html';
         });
     });
 });

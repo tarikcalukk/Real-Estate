@@ -104,7 +104,7 @@ app.post('/login', async (req, res) => {
 
     for (const korisnik of korisnici) {
       if (korisnik.username == jsonObj.username) {
-        const isPasswordMatched = jsonObj.password == korisnik.password;
+        const isPasswordMatched = await bcrypt.compare(jsonObj.password, korisnik.password);
 
         if (isPasswordMatched) {
           req.session.username = korisnik.username;
@@ -522,9 +522,9 @@ app.get('/nekretnina/:id', async (req, res) => {
 });
 
 // Nova ruta za vraćanje sljedećih 3 upita za nekretninu
-app.get('/next/upiti/nekretnina:id', async (req, res) => {
+app.get('/next/upiti/nekretnina/:id', async (req, res) => {
   const nekretninaId = parseInt(req.params.id, 10);
-  const page = parseInt(req.query.page, 10);  // Preuzimamo broj stranice iz query parametra
+  const page = parseInt(req.query.page, 10);
 
   if (page < 1) {
     return res.status(400).json({ greska: 'Page mora biti >= 1' });

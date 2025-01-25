@@ -1,27 +1,27 @@
-const db = require('./db.js')
+module.exports = async (Korisnik) => {
+  try {
+    await Korisnik.findOrCreate({
+      where: { username: "admin" },
+      defaults: {
+          ime: "Admin",
+          prezime: "Admin",
+          username: "admin",
+          password: "admin",
+          admin: true,
+      },
+    });
 
-async function initializeDatabase() {
-    const admin = await db.korisnik.findOne({ where: { username: 'admin' } });
-    const user = await db.korisnik.findOne({ where: { username: 'user' } });
-  
-    if (!admin) {
-      await db.korisnik.create({
-        ime: 'Admin',
-        prezime: 'Admin',
-        username: 'admin',
-        password: await bcrypt.hash('admin', 10),
-        role: 'admin',
-      });
-    }
-  
-    if (!user) {
-        await db.korisnik.create({
-            ime: 'User',
-            prezime: 'User',
-            username: 'user',
-            password: await bcrypt.hash('user', 10),
-            role: 'user',
-        });
-    }
-}
-initializeDatabase();  
+    await Korisnik.findOrCreate({
+      where: { username: "user" },
+      defaults: {
+          ime: "User",
+          prezime: "User",
+          username: "user",
+          password: "user",
+          admin: false,
+      },
+    });
+  } catch (error) {
+    console.error("Greška prilikom inicijalizacije korisnika:", error);
+  }
+};

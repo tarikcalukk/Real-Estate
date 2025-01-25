@@ -1,7 +1,7 @@
 const Sequelize = require("sequelize");
 
 module.exports = function(sequelize, DataTypes) {
-    const Ponuda = sequelize.define("ponuda", {
+    return sequelize.define("ponuda", {
         id: {
             type: Sequelize.INTEGER,
             primaryKey: true,
@@ -19,7 +19,7 @@ module.exports = function(sequelize, DataTypes) {
             type: Sequelize.INTEGER,
             allowNull: false,
             references: {
-                model: 'korisnici',
+                model: 'korisnik',
                 key: 'id'
             }
         },
@@ -27,16 +27,13 @@ module.exports = function(sequelize, DataTypes) {
             type: Sequelize.INTEGER,
             allowNull: false,
             references: {
-                model: 'nekretnine',
+                model: 'nekretnina',
                 key: 'id'
             }
         },
         cijenaPonude: {
             type: Sequelize.DECIMAL(10, 2),
-            allowNull: false,
-            validate: {
-                min: 0
-            }
+            allowNull: false
         },
         datumPonude: {
             type: Sequelize.DATE,
@@ -50,13 +47,12 @@ module.exports = function(sequelize, DataTypes) {
             type: Sequelize.INTEGER,
             allowNull: true,
             references: {
-                model: 'ponude',
+                model: 'ponuda',
                 key: 'id'
             }
         }
-    }, {
-        timestamps: false
+    }, 
+    {
+        freezeTableName: true
     });
-
-    return Ponuda;
 };

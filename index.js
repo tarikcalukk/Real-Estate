@@ -102,19 +102,14 @@ app.post('/login', async (req, res) => {
 Delete everything from the session.
 */
 app.post('/logout', (req, res) => {
-  // Check if the user is authenticated
   if (!req.session.username) {
-    // User is not logged in
     return res.status(401).json({ greska: 'Neautorizovan pristup' });
   }
-
-  // Clear all information from the session
   req.session.destroy((err) => {
     if (err) {
-      console.error('Error during logout:', err);
-      res.status(500).json({ greska: 'Internal Server Error' });
+      res.status(500).json({ greska: 'Greška prilikom odjave' });
     } else {
-      res.status(200).json({ poruka: 'Uspješno ste se odjavili' });
+      res.json({ poruka: 'Uspješno ste se odjavili' });
     }
   });
 });
@@ -137,7 +132,6 @@ app.get('/korisnik', async (req, res) => {
       return res.status(404).json({ greska: 'Korisnik nije pronađen' });
     }
 
-    // Vrati korisničke podatke, bez lozinke
     const userData = {
       id: korisnik.id,
       ime: korisnik.ime,
@@ -369,13 +363,13 @@ app.get('/upiti/moji', async (req, res) => {
 
   try {
     const korisnikQuery = `SELECT id FROM korisnik WHERE username = $1;`;
-    const { rows: korisnici } = await pool.query(korisnikQuery, [req.session.username]);
+    const { rows: korisnik } = await pool.query(korisnikQuery, [req.session.username]);
 
-    if (korisnici.length === 0) {
+    if (korisnik.length === 0) {
       return res.status(404).json({ greska: 'Korisnik nije pronađen' });
     }
 
-    const korisnikId = korisnici[0].id;
+    const korisnikId = korisnik[0].id;
     const upitiQuery = `
       SELECT u.nekretnina_id, u.tekst_upita
       FROM upit u

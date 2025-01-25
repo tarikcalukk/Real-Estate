@@ -15,18 +15,21 @@ module.exports = function(sequelize,DataTypes){
             type: Sequelize.TEXT,
             allowNull: false
         },
+        username: {
+            type: Sequelize.STRING(50),
+            allowNull: false
+        },
         password: {
             type: Sequelize.TEXT,
             allowNull: false
         },
         admin: {
-            type: Sequelize.BOOLEAN,
+            type: Sequelize.TINYINT(1),
             defaultValue: false
-        },
-        datumRegistracije: {
-            type: Sequelize.DATE,
-            defaultValue: Sequelize.NOW
         }
+    }, 
+    {
+        freezeTableName: true
     });
     return Korisnik;
 };

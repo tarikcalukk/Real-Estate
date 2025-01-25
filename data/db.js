@@ -1,45 +1,41 @@
 const Sequelize = require("sequelize");
-const sequelize = new Sequelize("wt24","root","password",{host:"127.0.0.1",dialect:"mysql",logging:false});
-const db={};
 
-db.Sequelize = Sequelize;  
-db.sequelize = sequelize;
+const KorisnikModel = require("./korisnik");
+const NekretninaModel = require("./nekretnina");
+const UpitModel = require("./upit");
+const ZahtjevModel = require("./zahtjev");
+const PonudaModel = require("./ponuda");
+const initializeUsers = require("./initialize");
 
-//import modela
-db.korisnik = require('./korisnik.js')(sequelize, Sequelize.DataTypes);
-db.nekretnina = require('./nekretnina.js')(sequelize, Sequelize.DataTypes);
-db.ponuda = require('./ponuda.js')(sequelize, Sequelize.DataTypes);
-db.upit = require('./upit.js')(sequelize, Sequelize.DataTypes);
-db.zahtjev = require('./zahtjev.js')(sequelize, Sequelize.DataTypes);
-
-
-//relacije
-db.korisnik.hasMany(db.upit);
-db.upit.belongsTo(db.korisnik);
-
-db.nekretnina.hasMany(db.upit);
-db.upit.belongsTo(db.nekretnina);
-
-db.korisnik.hasMany(db.zahtjev);
-db.zahtjev.belongsTo(db.korisnik);
-
-db.nekretnina.hasMany(db.zahtjev);
-db.zahtjev.belongsTo(db.nekretnina);
-
-db.korisnik.hasMany(db.ponuda);
-db.ponuda.belongsTo(db.korisnik);
-
-db.nekretnina.hasMany(db.ponuda);
-db.ponuda.belongsTo(db.nekretnina);
-
-db.ponuda.hasMany(db.ponuda, { 
-    as: 'related_offers', 
-    foreignKey: 'vezanaPonudaId' 
+const sequelize = new Sequelize("wt24", "root", "password", {
+    host: "localhost",
+    dialect: "mysql",
+    logging: false,
 });
 
-db.ponuda.belongsTo(db.ponuda, { 
-    as: "main_offer", 
-    foreignKey: "vezanaPonudaId"
-});
+const Korisnik = KorisnikModel(sequelize, Sequelize);
+const Nekretnina = NekretninaModel(sequelize, Sequelize);
+const Upit = UpitModel(sequelize, Sequelize);
+const Zahtjev = ZahtjevModel(sequelize, Sequelize);
+const Ponuda = PonudaModel(sequelize, Sequelize);
 
-module.exports=db;
+require("./veze")({ Korisnik, Nekretnina, Upit, Zahtjev, Ponuda });
+
+sequelize
+    .sync({ alter: true })
+    .then(async () => {
+        console.log("Baza je sinhronizovana.");
+        await initializeUsers(Korisnik);
+    })
+    .catch((err) => {
+        console.error("Greška prilikom sinhronizacije baze:", err);
+    });
+
+module.exports = {
+    sequelize,
+    Korisnik,
+    Nekretnina,
+    Upit,
+    Zahtjev,
+    Ponuda
+};

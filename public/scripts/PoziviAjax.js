@@ -24,166 +24,97 @@ const PoziviAjax = (() => {
     }
 
     // vraća korisnika koji je trenutno prijavljen na sistem
-    function impl_getKorisnik(fnCallback) {
-        let ajax = new XMLHttpRequest();
-
-        ajax.onreadystatechange = function () {
-            if (ajax.readyState == 4) {
-                if (ajax.status == 200) {
-                    console.log('Uspješan zahtjev, status 200');
-                    fnCallback(null, JSON.parse(ajax.responseText));
-                } else if (ajax.status == 401) {
-                    console.log('Neuspješan zahtjev, status 401');
-                    fnCallback("error", null);
-                } else {
-                    console.log('Nepoznat status:', ajax.status);
-                }
+    async function impl_getKorisnik(fnCallback) {
+        try {
+            const result = await pool.query('SELECT * FROM korisnici WHERE username = $1', [req.session.username]);
+            if (result.rows.length === 0) {
+                return fnCallback("error", null);
             }
-        };
-
-        ajax.open("GET", "http://localhost:3000/korisnik/", true);
-        ajax.setRequestHeader("Content-Type", "application/json");
-        ajax.send();
+            fnCallback(null, result.rows[0]);
+        } catch (err) {
+            fnCallback(err, null);
+        }
     }
 
     // ažurira podatke loginovanog korisnika
-    function impl_putKorisnik(noviPodaci, fnCallback) {
-        // Check if user is authenticated
-        if (!req.session.username) {
-            // User is not logged in
-            return fnCallback({ status: 401, statusText: 'Neautorizovan pristup' }, null);
+    async function impl_putKorisnik(noviPodaci, fnCallback) {
+        try {
+            const { ime, prezime, username, password } = noviPodaci;
+
+            const result = await pool.query(
+                'UPDATE korisnici SET ime = $1, prezime = $2, password = $3 WHERE username = $4 RETURNING *',
+                [ime, prezime, password, req.session.username]
+            );
+
+            if (result.rowCount === 0) {
+                return fnCallback({ status: 401, statusText: 'Neautorizovan pristup' }, null);
+            }
+
+            fnCallback(null, { poruka: 'Podaci su uspješno ažurirani' });
+        } catch (err) {
+            fnCallback(err, null);
         }
-
-        // Get data from request body
-        const { ime, prezime, username, password } = noviPodaci;
-
-        // Read user data from the JSON file
-        const users = readJsonFile('korisnici');
-
-        // Find the user by username
-        const loggedInUser = users.find((user) => user.username === req.session.username);
-
-        if (!loggedInUser) {
-            // User not found (should not happen if users are correctly managed)
-            return fnCallback({ status: 401, statusText: 'Neautorizovan pristup' }, null);
-        }
-
-        // Update user data with the provided values
-        if (ime) loggedInUser.ime = ime;
-        if (prezime) loggedInUser.prezime = prezime;
-        if (username) loggedInUser.adresa = adresa;
-        if (password) loggedInUser.brojTelefona = brojTelefona;
-
-        // Save the updated user data back to the JSON file
-        saveJsonFile('korisnici', users);
-
-        fnCallback(null, { poruka: 'Podaci su uspješno ažurirani' });
     }
 
     // dodaje novi upit za trenutno loginovanog korisnika
-    function impl_postUpit(nekretnina_id, tekst_upita, fnCallback) {
-        // Check if user is authenticated
-        if (!req.session.username) {
-            // User is not logged in
-            return fnCallback({ status: 401, statusText: 'Neautorizovan pristup' }, null);
-        }
-
-        // Read user data from the JSON file asynchronously
-        readJsonFileAsync('korisnici', (err, users) => {
-            if (err) {
-                return fnCallback({ status: 500, statusText: 'Internal Server Error' }, null);
+    async function impl_postUpit(nekretnina_id, tekst_upita, fnCallback) {
+        try {
+            const korisnik = await pool.query('SELECT id FROM korisnici WHERE username = $1', [req.session.username]);
+            if (korisnik.rows.length === 0) {
+                return fnCallback({ status: 401, statusText: 'Neautorizovan pristup' }, null);
             }
 
-            // Read properties data from the JSON file asynchronously
-            readJsonFileAsync('nekretnine', (err, nekretnine) => {
+            const nekretnina = await pool.query('SELECT * FROM nekretnine WHERE id = $1', [nekretnina_id]);
+            if (nekretnina.rows.length === 0) {
+                return fnCallback({ status: 400, statusText: `Nekretnina sa id-em ${nekretnina_id} ne postoji` }, null);
+            }
+
+            await pool.query(
+                'INSERT INTO upiti (korisnik_id, nekretnina_id, tekst_upita) VALUES ($1, $2, $3)',
+                [korisnik.rows[0].id, nekretnina_id, tekst_upita]
+            );
+
+            fnCallback(null, { poruka: 'Upit je uspješno dodan' });
+        } catch (err) {
+            fnCallback(err, null);
+        }
+    }
+
+    async function impl_getNekretnine(fnCallback) {
+        try {
+            const result = await pool.query('SELECT * FROM nekretnine');
+            fnCallback(null, result.rows);
+        } catch (err) {
+            fnCallback(err, null);
+        }
+    }
+
+    async function impl_postLogin(username, password, fnCallback) {
+        try {
+            const result = await pool.query('SELECT * FROM korisnici WHERE username = $1 AND password = $2', [username, password]);
+
+            if (result.rows.length === 0) {
+                return fnCallback({ status: 401, statusText: 'Neispravni kredencijali' }, null);
+            }
+
+            req.session.username = username;
+            fnCallback(null, { poruka: 'Prijava uspješna' });
+        } catch (err) {
+            fnCallback(err, null);
+        }
+    }
+
+    async function impl_postLogout(fnCallback) {
+        try {
+            req.session.destroy((err) => {
                 if (err) {
-                    return fnCallback({ status: 500, statusText: 'Internal Server Error' }, null);
+                    return fnCallback(err, null);
                 }
-
-                // Find the user by username
-                const loggedInUser = users.find((user) => user.username === req.session.username);
-
-                // Check if the property with nekretnina_id exists
-                const nekretnina = nekretnine.find((property) => property.id === nekretnina_id);
-
-                if (!nekretnina) {
-                    // Property not found
-                    return fnCallback({ status: 400, statusText: `Nekretnina sa id-em ${nekretnina_id} ne postoji` }, null);
-                }
-
-                // Add a new query to the property's queries array
-                nekretnina.upiti.push({
-                    korisnik_id: loggedInUser.id,
-                    tekst_upita: tekst_upita
-                });
-
-                // Save the updated properties data back to the JSON file asynchronously
-                saveJsonFileAsync('nekretnine', nekretnine, (err) => {
-                    if (err) {
-                        return fnCallback({ status: 500, statusText: 'Internal Server Error' }, null);
-                    }
-
-                    fnCallback(null, { poruka: 'Upit je uspješno dodan' });
-                });
+                fnCallback(null, { poruka: 'Odjava uspješna' });
             });
-        });
-    }
-
-    function impl_getNekretnine(fnCallback) {
-        // Koristimo AJAX poziv da bismo dohvatili podatke s servera
-        ajaxRequest('GET', '/nekretnine', null, (error, data) => {
-            // Ako se dogodi greška pri dohvaćanju podataka, proslijedi grešku kroz callback
-            if (error) {
-                fnCallback(error, null);
-            } else {
-                // Ako su podaci uspješno dohvaćeni, parsiraj JSON i proslijedi ih kroz callback
-                try {
-                    const nekretnine = JSON.parse(data);
-                    fnCallback(null, nekretnine);
-                } catch (parseError) {
-                    // Ako se dogodi greška pri parsiranju JSON-a, proslijedi grešku kroz callback
-                    fnCallback(parseError, null);
-                }
-            }
-        });
-    }
-
-    function impl_postLogin(username, password, fnCallback) {
-        var ajax = new XMLHttpRequest()
-
-        ajax.onreadystatechange = function () {
-            if (ajax.readyState == 4 && ajax.status == 200) {
-                fnCallback(null, ajax.response)
-            }
-            else if (ajax.readyState == 4) {
-                //desio se neki error
-                fnCallback(ajax.statusText, null)
-            }
+        } catch (err) {
+            fnCallback(err, null);
         }
-        ajax.open("POST", "http://localhost:3000/login", true)
-        ajax.setRequestHeader("Content-Type", "application/json")
-        var objekat = {
-            "username": username,
-            "password": password
-        }
-        forSend = JSON.stringify(objekat)
-        ajax.send(forSend)
-    }
-
-    function impl_postLogout(fnCallback) {
-        let ajax = new XMLHttpRequest()
-
-        ajax.onreadystatechange = function () {
-            if (ajax.readyState == 4 && ajax.status == 200) {
-                fnCallback(null, ajax.response)
-            }
-            else if (ajax.readyState == 4) {
-                //desio se neki error
-                fnCallback(ajax.statusText, null)
-            }
-        }
-        ajax.open("POST", "http://localhost:3000/logout", true)
-        ajax.send()
     }
 
     function getTop5Nekretnina(lokacija, fnCallback) {

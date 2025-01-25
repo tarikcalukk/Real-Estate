@@ -1,7 +1,7 @@
 const Sequelize = require("sequelize");
 
 module.exports = function(sequelize, DataTypes) {
-    const Nekretnina = sequelize.define("nekretnina", {
+    return sequelize.define("nekretnina", {
         id: {
             type: Sequelize.INTEGER,
             primaryKey: true,
@@ -17,17 +17,11 @@ module.exports = function(sequelize, DataTypes) {
         },
         kvadratura: {
             type: Sequelize.INTEGER,
-            allowNull: false,
-            validate: {
-                min: 0
-            }
+            allowNull: false
         },
         cijena: {
             type: Sequelize.DECIMAL(10, 2),
-            allowNull: false,
-            validate: {
-                min: 0
-            }
+            allowNull: false
         },
         tip_grijanja: {
             type: Sequelize.TEXT,
@@ -37,13 +31,7 @@ module.exports = function(sequelize, DataTypes) {
             type: Sequelize.TEXT,
             allowNull: false
         },
-        godina_izgradnje: {
-            type: Sequelize.INTEGER,
-            validate: {
-                min: 1800,
-                max: new Date().getFullYear()
-            }
-        },
+        godina_izgradnje:Sequelize.INTEGER,
         datum_objave: {
             type: Sequelize.DATE,
             defaultValue: Sequelize.NOW
@@ -56,13 +44,12 @@ module.exports = function(sequelize, DataTypes) {
             type: Sequelize.INTEGER,
             allowNull: true,
             references: {
-                model: 'korisnici',
+                model: 'korisnik',
                 key: 'id'
             }
         }
-    }, {
-        timestamps: false
+    }, 
+    {
+        freezeTableName: true
     });
-
-    return Nekretnina;
 };

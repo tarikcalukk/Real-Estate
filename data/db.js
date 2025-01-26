@@ -24,7 +24,6 @@ require("./veze")({ Korisnik, Nekretnina, Upit, Zahtjev, Ponuda });
 sequelize
     .sync({ alter: true })
     .then(async () => {
-        console.log("Baza je sinhronizovana.");
         await initializeUsers(Korisnik);
     })
     .catch((err) => {

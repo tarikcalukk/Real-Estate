@@ -1,19 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
     const upitiContainer = document.getElementById('upiti');
-    const prevButton = document.getElementById('prev');
-    const nextButton = document.getElementById('next');
-    const lokacijaLink = document.getElementById('lokacija-link');
+    const zahtjeviContainer = document.getElementById('zahtjevi');
+    const ponudeContainer = document.getElementById('ponude');
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
-    let carousel = null;
 
     if (id) {
-        PoziviAjax.getNekretnina(id, (error, nekretnina) => {
-            if (error || !nekretnina) {
+        PoziviAjax.getNekretnina(id, (error, response) => {
+            if (error || !response) {
                 alert('Došlo je do greške ili nekretnina nije pronađena.');
                 return;
             }
-
+            const { nekretnina, upiti, zahtjevi, ponude } = response;
             document.querySelector('#osnovno img').src = `../resources/${nekretnina.id}.jpg`;
             document.querySelector('#osnovno p:nth-child(2)').textContent = `Naziv: ${nekretnina.naziv}`;
             document.querySelector('#osnovno p:nth-child(3)').textContent = `Kvadratura: ${nekretnina.kvadratura} m²`;
@@ -24,41 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('#kolona2 p:nth-child(2)').textContent = `Datum objave oglasa: ${nekretnina.datum_objave}`;
             document.querySelector('#opis p').textContent = nekretnina.opis;
 
-            if (nekretnina.upiti && nekretnina.upiti.length > 0) {
-                carousel = postaviCarousel(upitiContainer, nekretnina.upiti, 0, id);
-            } else {
-                upitiContainer.innerHTML = '<p>Nema dostupnih upita za ovu nekretninu.</p>';
-            }
+            PoziviAjax.getNekretninaInteresovanja(id, (error, interesovanja) => {
+                if (error) {
+                    console.error('Došlo je do greške prilikom dohvaćanja interesovanja.');
+                    return;
+                }
+
+                postaviCarousel(upitiContainer, upiti, 0, id);
+                postaviCarousel(zahtjeviContainer, zahtjevi, 0, id);
+                postaviCarousel(ponudeContainer, ponude, 0, id);
+            });
         });
     } else {
-        alert('ID nekretnine nije definisan.');
+        alert('Pogrešan ID.');
     }
-
-    if (prevButton && nextButton) {
-        prevButton.addEventListener('click', () => {
-            if (carousel) carousel.fnLijevo();
-        });
-        nextButton.addEventListener('click', () => {
-            if (carousel) carousel.fnDesno();
-        });
-    }
-
-    lokacijaLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        const lokacija = lokacijaLink.textContent;
-    
-        PoziviAjax.getTop5Nekretnina(lokacija, (error, nekretnine) => {
-            if (error) {
-                alert('Došlo je do greške prilikom dohvaćanja nekretnina.');
-                return;
-            }
-    
-            // Spremi nekretnine u `sessionStorage` za prenos na novu stranicu
-            sessionStorage.setItem('top5Nekretnina', JSON.stringify(nekretnine));
-            sessionStorage.setItem('lokacija', lokacija);
-    
-            // Preusmjeri na novu stranicu
-            window.location.href = 'top5.html';
-        });
-    });
 });

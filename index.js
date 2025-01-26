@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs').promises; // Using asynchronus API for file read and write
 const bcrypt = require('bcrypt');
 const db = require('./data/db.js')
+const moment = require('moment');
 
 const app = express();
 const PORT = 3000;
@@ -76,25 +77,23 @@ async function saveJsonFile(filename, data) {
   }
 }
 
-/*
-Checks if the user exists and if the password is correct based on korisnici.json data. 
-If the data is correct, the username is saved in the session and a success message is sent.
-*/
+
 app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+    const { username, password } = req.body;
 
-  try {
-    const korisnik = await db.korisnik.findOne({ where: { username } });
-    if (!korisnik || !(await bcrypt.compare(password, korisnik.password))) {
-      return res.status(401).json({ greska: 'Neispravno korisničko ime ili lozinka' });
+    try {
+      const korisnik = await db.Korisnik.findOne({ where: { username } });
+
+      if (!korisnik || !(await bcrypt.compare(password, korisnik.password))) {
+        return res.status(401).json({ greska: 'Neispravno korisničko ime ili lozinka' });
+      }
+
+      req.session.username = korisnik.username;
+      req.session.role = korisnik.role;
+      res.json({ poruka: 'Uspješna prijava' });
+    } catch (err) {
+      res.status(500).json({ greska: 'Greška na serveru' });
     }
-
-    req.session.username = korisnik.username;
-    req.session.role = korisnik.role;
-    res.json({ poruka: 'Uspješna prijava' });
-  } catch (err) {
-    res.status(500).json({ greska: 'Greška na serveru' });
-  }
 });
 
 
@@ -123,25 +122,19 @@ app.get('/korisnik', async (req, res) => {
     return res.status(401).json({ greska: 'Neautorizovan pristup' });
   }
 
-  const username = req.session.username;
-
   try {
-    const korisnik = await db.korisnik.findOne({ where: { username } });
-
+    const korisnik = await db.Korisnik.findOne({ where: { username: req.session.username } });
     if (!korisnik) {
       return res.status(404).json({ greska: 'Korisnik nije pronađen' });
     }
 
-    const userData = {
+    res.status(200).json({
       id: korisnik.id,
       ime: korisnik.ime,
       prezime: korisnik.prezime,
-      username: korisnik.username,
-    };
-
-    res.status(200).json(userData);
+      username: korisnik.username
+    });
   } catch (error) {
-    console.error('Greška pri dohvatanju korisničkih podataka:', error);
     res.status(500).json({ greska: 'Greška na serveru' });
   }
 });
@@ -157,17 +150,17 @@ app.post('/upit', async (req, res) => {
   const { nekretnina_id, tekst_upita } = req.body;
 
   try {
-    const korisnik = await db.korisnik.findOne({ where: { username: req.session.username } });
-    const nekretnina = await db.nekretnina.findByPk(nekretnina_id);
+    const korisnik = await db.Korisnik.findOne({ where: { username: req.session.username } });
+    const nekretnina = await db.Nekretnina.findByPk(nekretnina_id);
 
     if (!nekretnina) {
       return res.status(404).json({ greska: 'Nekretnina ne postoji' });
     }
 
-    await db.upit.create({
-      korisnikId: korisnik.id,
-      nekretninaId: nekretnina_id,
-      tekst: tekst_upita,
+    await db.Upit.create({
+      korisnik_id: korisnik.id,
+      nekretnina_id: nekretnina_id,
+      tekst: tekst_upita
     });
 
     res.json({ poruka: 'Upit je uspješno kreiran' });
@@ -185,11 +178,9 @@ app.put('/korisnik', async (req, res) => {
   }
 
   const { ime, prezime, username, password } = req.body;
-  const currentUsername = req.session.username;
 
   try {
-    // Pronađi trenutno prijavljenog korisnika u bazi
-    const korisnik = await db.korisnik.findOne({ where: { username: currentUsername } });
+    const korisnik = await db.Korisnik.findOne({ where: { username: req.session.username } });
 
     if (!korisnik) {
       return res.status(404).json({ greska: 'Korisnik nije pronađen' });
@@ -201,15 +192,12 @@ app.put('/korisnik', async (req, res) => {
       korisnik.username = username;
       req.session.username = username;
     }
-    if (password) {
-      korisnik.password = await bcrypt.hash(password, 10);
-    }
+    if (password) korisnik.password = await bcrypt.hash(password, 10);
 
     await korisnik.save();
 
     res.status(200).json({ poruka: 'Podaci su uspješno ažurirani' });
   } catch (error) {
-    console.error('Greška pri ažuriranju korisničkih podataka:', error);
     res.status(500).json({ greska: 'Greška na serveru' });
   }
 });
@@ -219,7 +207,7 @@ Returns all properties from the file.
 */
 app.get('/nekretnine', async (req, res) => {
   try {
-    const nekretnine = await db.nekretnina.findAll();
+    const nekretnine = await db.Nekretnina.findAll();
     res.json(nekretnine);
   } catch (err) {
     res.status(500).json({ greska: 'Greška na serveru' });
@@ -335,113 +323,308 @@ app.post('/marketing/osvjezi/klikovi', async (req, res) => {
 });
 
 app.get('/nekretnine/top5', async (req, res) => {
+  const { Nekretnina } = require('./data/db');
   const lokacija = req.query.lokacija;
 
   if (!lokacija) {
-    return res.status(400).json({ error: 'Lokacija nije specificirana.' });
+      return res.status(400).json({ error: 'Lokacija nije specificirana.' });
   }
 
   try {
-    const query = `
-      SELECT * FROM nekretnina
-      WHERE lokacija = $1
-      ORDER BY datum_objave DESC
-      LIMIT 5;
-    `;
-    const { rows: nekretnine } = await pool.query(query, [lokacija]);
-    return res.status(200).json(nekretnine);
+      const nekretnine = await db.Nekretnina.findAll({
+          where: { lokacija },
+          order: [['datum_objave', 'DESC']],
+          limit: 5,
+      });
+      return res.status(200).json(nekretnine);
   } catch (error) {
-    console.error('Greška prilikom obrade podataka:', error);
-    return res.status(500).json({ error: 'Greška na serveru.' });
+      console.error('Greška prilikom obrade podataka:', error);
+      return res.status(500).json({ error: 'Greška na serveru.' });
   }
 });
 
 app.get('/upiti/moji', async (req, res) => {
   if (!req.session.username) {
-    return res.status(401).json({ greska: 'Neautorizovan pristup' });
+      return res.status(401).json({ greska: 'Neautorizovan pristup' });
   }
 
   try {
-    const korisnikQuery = `SELECT id FROM korisnik WHERE username = $1;`;
-    const { rows: korisnik } = await pool.query(korisnikQuery, [req.session.username]);
+      const korisnik = await db.Korisnik.findOne({
+          where: { username: req.session.username },
+      });
 
-    if (korisnik.length === 0) {
-      return res.status(404).json({ greska: 'Korisnik nije pronađen' });
-    }
+      if (!korisnik) {
+          return res.status(404).json({ greska: 'Korisnik nije pronađen' });
+      }
 
-    const korisnikId = korisnik[0].id;
-    const upitiQuery = `
-      SELECT u.nekretnina_id, u.tekst_upita
-      FROM upit u
-      WHERE u.korisnik_id = $1;
-    `;
-    const { rows: upiti } = await pool.query(upitiQuery, [korisnikId]);
+      const upiti = await db.Upit.findAll({
+          where: { korisnik_id: korisnik.id },
+          attributes: ['nekretnina_id', 'tekst'],
+      });
 
-    return res.status(200).json(upiti);
+      return res.status(200).json(upiti);
   } catch (error) {
-    console.error('Greška prilikom obrade upita:', error);
-    return res.status(500).json({ greska: 'Greška na serveru.' });
+      console.error('Greška prilikom obrade upita:', error);
+      return res.status(500).json({ greska: 'Greška na serveru.' });
   }
 });
 
 app.get('/nekretnina/:id', async (req, res) => {
-  const nekretninaId = parseInt(req.params.id, 10);
+  const nekretnina_id = parseInt(req.params.id, 10);
 
   try {
-    const nekretninaQuery = `
-      SELECT * FROM nekretnina WHERE id = $1;
-    `;
-    const { rows: nekretnine } = await pool.query(nekretninaQuery, [nekretninaId]);
+      const nekretnina = await db.Nekretnina.findByPk(nekretnina_id);
 
-    if (nekretnine.length === 0) {
-      return res.status(404).json({ greska: `Nekretnina sa id-em ${nekretninaId} nije pronađena` });
-    }
+      if (!nekretnina) {
+          console.log(`Nekretnina sa ID ${nekretnina_id} nije pronađena.`);
+          return res.status(404).json({ greska: 'Nekretnina nije pronađena' });
+      }
 
-    const nekretnina = nekretnine[0];
-    const upitiQuery = `
-      SELECT * FROM upit WHERE nekretnina_id = $1 ORDER BY datum_upita DESC LIMIT 3;
-    `;
-    const { rows: upiti } = await pool.query(upitiQuery, [nekretninaId]);
+      const upiti = await db.Upit.findAll({ where: { nekretnina_id } });
+      const zahtjevi = await db.Zahtjev.findAll({
+          where: { nekretnina_id },
+          order: [['datumKreiranja', 'DESC']],
+      });
+      const ponude = await db.Ponuda.findAll({
+          where: { nekretnina_id },
+          order: [['datumKreiranja', 'DESC']],
+      });
 
-    return res.status(200).json({ ...nekretnina, upiti });
+      res.status(200).json({
+          nekretnina: nekretnina.toJSON(),
+          upiti: upiti.map(u => u.toJSON()),
+          zahtjevi: zahtjevi.map(z => z.toJSON()),
+          ponude: ponude.map(p => p.toJSON()),
+      });
   } catch (error) {
-    console.error('Greška prilikom obrade nekretnine:', error);
-    return res.status(500).json({ greska: 'Greška na serveru.' });
+      console.error('Greška prilikom dohvaćanja podataka:', error);
+      res.status(500).json({ greska: 'Greška na serveru.' });
   }
 });
 
-app.get('/next/upiti/nekretnina/:id', async (req, res) => {
-  const nekretninaId = parseInt(req.params.id, 10);
-  const page = parseInt(req.query.page, 10);
+app.get('/next/upiti/nekretnina/:id', async (req, res) => { 
+    const nekretnina_id = parseInt(req.params.id, 10);
 
-  if (page < 1) {
-    return res.status(400).json({ greska: 'Page mora biti >= 1' });
+    try {
+        const upiti = await db.Upit.findAll({
+            where: { nekretnina_id },
+            order: [['datumKreiranja', 'DESC']],
+        });
+
+        if (upiti.length === 0) {
+            return res.status(404).json([]);
+        }
+
+        return res.status(200).json(upiti);
+    } catch (error) {
+        console.error('Greška prilikom obrade upita:', error);
+        return res.status(500).json({ greska: 'Greška na serveru.' });
+    }
+});
+
+app.get('/nekretnina/:id/interesovanja', async (req, res) => {
+  const nekretnina_id = parseInt(req.params.id, 10);
+
+  if (isNaN(nekretnina_id)) {
+      return res.status(400).json({ error: "Neispravan ID nekretnine" });
   }
 
   try {
-    const limit = 3;
-    const offset = (page - 1) * limit;
+      const ponude = await db.Ponuda.findAll({
+          where: { nekretnina_id },
+          include: [
+              { model: db.Korisnik, as: 'korisnik', attributes: ['id', 'username', 'ime', 'prezime'] }
+          ]
+      });
 
-    const upitiQuery = `
-      SELECT * FROM upit
-      WHERE nekretnina_id = $1
-      ORDER BY datum_upita DESC
-      LIMIT $2 OFFSET $3;
-    `;
-    const { rows: upiti } = await pool.query(upitiQuery, [nekretninaId, limit, offset]);
+      const upiti = await db.Upit.findAll({
+          where: { nekretnina_id },
+          include: [
+              { model: db.Korisnik, as: 'korisnik', attributes: ['id', 'username', 'ime', 'prezime'] }
+          ]
+      });
 
-    if (upiti.length === 0) {
-      return res.status(404).json([]);
-    }
+      const zahtjevi = await db.Zahtjev.findAll({
+          where: { nekretnina_id },
+          include: [
+              { model: db.Korisnik, as: 'korisnik', attributes: ['id', 'username', 'ime', 'prezime'] }
+          ]
+      });
 
-    return res.status(200).json(upiti);
+      const user = req.session.username ? await db.Korisnik.findOne({ where: { username: req.session.username } }) : null;
+
+      const interesovanja = [
+          ...ponude.map(ponuda => ({
+              ...ponuda.dataValues,
+              tip: 'ponuda'
+          })),
+          ...upiti.map(upit => ({
+              ...upit.dataValues,
+              tip: 'upit'
+          })),
+          ...zahtjevi.map(zahtjev => ({
+              ...zahtjev.dataValues,
+              tip: 'zahtjev'
+          }))
+      ];
+
+      // Filtriraj rezultate (ako je korisnik prijavljen i nije admin, izostavi cijenu iz ponuda)
+      const filteredInteresovanja = interesovanja.map(interesovanje => {
+          if (user && (user.role === 'admin' || user.id === interesovanje.korisnik_id)) {
+              return interesovanje;
+          } else {
+              const { cijena, ...interesovanjeBezCijene } = interesovanje;
+              return interesovanjeBezCijene;
+          }
+      });
+
+      if (filteredInteresovanja.length === 0) {
+          return res.status(404).json({ message: 'Nema interesovanja za ovu nekretninu' });
+      }
+
+      res.status(200).json(filteredInteresovanja);
   } catch (error) {
-    console.error('Greška prilikom obrade upita:', error);
-    return res.status(500).json({ greska: 'Greška na serveru.' });
+      console.error("Greška pri dobavljanju interesovanja:", error);
+      res.status(500).json({ error: "Greška na serveru" });
   }
 });
 
-// Start server
+app.post('/nekretnina/:id/ponuda', async (req, res) => {
+    const nekretnina_id = parseInt(req.params.id, 10);
+    const { tekst, ponudaCijene, datumPonude, idVezanePonude, odbijenaPonuda } = req.body;
+
+    if (isNaN(nekretnina_id)) {
+        return res.status(400).json({ error: "Neispravan ID nekretnine" });
+    }
+
+    if (!tekst || !ponudaCijene || !datumPonude || typeof odbijenaPonuda !== 'boolean') {
+        return res.status(400).json({ error: "Nedostaju obavezni podaci." });
+    }
+
+    try {
+        if (!req.session.username) {
+            return res.status(401).json({ error: "Neautorizovan pristup" });
+        }
+
+        const korisnik = await db.Korisnik.findOne({ where: { username: req.session.username } });
+
+        if (!korisnik) {
+            return res.status(404).json({ error: "Korisnik nije pronađen" });
+        }
+
+        const nekretnina = await db.Nekretnina.findByPk(nekretnina_id);
+        if (!nekretnina) {
+            return res.status(404).json({ error: "Nekretnina nije pronađena" });
+        }
+
+        const ponude = await db.Ponuda.findAll({ where: { nekretnina_id, odbijenaPonuda: false } });
+
+        if (ponude.some(ponuda => ponuda.odbijenaPonuda)) {
+            return res.status(400).json({ error: "Ne mogu se dodavati nove ponude, prethodna ponuda je odbijena." });
+        }
+
+        if (idVezanePonude) {
+            const vezanaPonuda = await db.Ponuda.findByPk(idVezanePonude);
+            if (!vezanaPonuda) {
+                return res.status(404).json({ error: "Vezana ponuda nije pronađena" });
+            }
+
+            if (korisnik.role !== 'admin' && vezanaPonuda.korisnik_id !== korisnik.id && !vezanaPonuda.odbijenaPonuda) {
+                return res.status(403).json({ error: "Nemate pravo da odgovorite na ovu ponudu" });
+            }
+        }
+
+        const novaPonuda = await db.Ponuda.create({
+            tekst,
+            ponudaCijene,
+            datumPonude,
+            vezanaPonudaId: idVezanePonude,
+            odbijenaPonuda,
+            korisnik_id: korisnik.id,
+            nekretnina_id
+        });
+
+        res.status(201).json(novaPonuda);
+    } catch (error) {
+        console.error("Greška pri dodavanju ponude:", error);
+        res.status(500).json({ error: "Greška na serveru" });
+    }
+});
+
+app.post('/nekretnina/:id/zahtjev', async (req, res) => {
+    const nekretnina_id = parseInt(req.params.id, 10);
+    const { tekst, trazeniDatum } = req.body;
+
+    if (isNaN(nekretnina_id)) {
+        return res.status(400).json({ error: "Neispravan ID nekretnine" });
+    }
+
+    if (!tekst || !trazeniDatum) {
+        return res.status(400).json({ error: "Nedostaju obavezni podaci." });
+    }
+
+    const now = moment();
+    if (moment(trazeniDatum).isBefore(now, 'day')) {
+        return res.status(400).json({ error: "Traženi datum ne može biti u prošlosti." });
+    }
+
+    try {
+        const nekretnina = await db.Nekretnina.findByPk(nekretnina_id);
+        if (!nekretnina) {
+            return res.status(404).json({ error: "Nekretnina nije pronađena" });
+        }
+
+        const noviZahtjev = await db.Zahtjev.create({
+            tekst,
+            trazeniDatum,
+            nekretnina_id,
+            korisnik_id: req.session.username
+        });
+
+        res.status(201).json(noviZahtjev);
+    } catch (error) {
+        console.error("Greška pri dodavanju zahtjeva:", error);
+        res.status(500).json({ error: "Greška na serveru" });
+    }
+});
+
+app.put('/nekretnina/:id/zahtjev/:zid', async (req, res) => {
+    const nekretnina_id = parseInt(req.params.id, 10);
+    const zahtjevId = parseInt(req.params.zid, 10);
+    const { odobren, addToTekst } = req.body;
+
+    if (!req.session && req.session.role === 'admin') {
+        return res.status(403).json({ error: "Samo admin može odgovarati na zahtjeve." });
+    }
+
+    if (isNaN(nekretnina_id) || isNaN(zahtjevId)) {
+        return res.status(400).json({ error: "Neispravan ID nekretnine ili zahtjeva." });
+    }
+
+    try {
+        const zahtjev = await db.Zahtjev.findOne({ where: { id: zahtjevId, nekretnina_id } });
+
+        if (!zahtjev) {
+            return res.status(404).json({ error: "Zahtjev nije pronađen." });
+        }
+
+        if (odobren === false && !addToTekst) {
+            return res.status(400).json({ error: "Za zahtjev koji nije odobren, mora biti poslan addToTekst." });
+        }
+
+        const odgovorTekst = addToTekst ? `ODGOVOR ADMINA: ${addToTekst}` : '';
+        const updatedZahtjev = await zahtjev.update({
+            odobren,
+            tekst: `${zahtjev.tekst} ${odgovorTekst}`,
+        });
+
+        res.status(200).json(updatedZahtjev);
+    } catch (error) {
+        console.error("Greška pri odgovaranju na zahtjev:", error);
+        res.status(500).json({ error: "Greška na serveru" });
+    }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

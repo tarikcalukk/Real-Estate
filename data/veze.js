@@ -1,29 +1,25 @@
 const Sequelize = require("sequelize");
 
 
-module.exports = (models) => {
-  const { Korisnik, Nekretnina, Upit, Zahtjev, Ponuda } = models;
+module.exports = ({ Korisnik, Nekretnina, Upit, Zahtjev, Ponuda }) => {
+  Upit.belongsTo(Nekretnina, { foreignKey: 'nekretnina_id' });
+  Nekretnina.hasMany(Upit, { foreignKey: 'nekretnina_id' });
 
+  Upit.belongsTo(Korisnik, { foreignKey: 'korisnik_id' });
+  Korisnik.hasMany(Upit, { foreignKey: 'korisnik_id' });
 
-  Korisnik.hasMany(Upit);
-  Upit.belongsTo(Korisnik);
+  Zahtjev.belongsTo(Nekretnina, { foreignKey: 'nekretnina_id' });
+  Nekretnina.hasMany(Zahtjev, { foreignKey: 'nekretnina_id' });
 
-  Nekretnina.hasMany(Upit);
-  Upit.belongsTo(Nekretnina);
+  Zahtjev.belongsTo(Korisnik, { foreignKey: 'korisnik_id' });
+  Korisnik.hasMany(Zahtjev, { foreignKey: 'korisnik_id' });
 
-  Korisnik.hasMany(Zahtjev);
-  Zahtjev.belongsTo(Korisnik);
+  Ponuda.belongsTo(Nekretnina, { foreignKey: 'nekretnina_id' });
+  Nekretnina.hasMany(Ponuda, { foreignKey: 'nekretnina_id' });
 
-  Nekretnina.hasMany(Zahtjev);
-  Zahtjev.belongsTo(Nekretnina);
+  Ponuda.belongsTo(Korisnik, { foreignKey: 'korisnik_id' });
+  Korisnik.hasMany(Ponuda, { foreignKey: 'korisnik_id' });
 
-  Korisnik.hasMany(Ponuda);
-  Ponuda.belongsTo(Korisnik);
-
-  Nekretnina.hasMany(Ponuda);
-  Ponuda.belongsTo(Nekretnina);
-
-  Ponuda.hasMany(Ponuda, { as: 'vezanePonude', foreignKey: 'vezanaPonudaId' });
-  Ponuda.belongsTo(Ponuda, { as: "glavnaPonuda", foreignKey: "vezanaPonudaId"});
-
+  Ponuda.belongsTo(Ponuda, { foreignKey: 'vezanaPonudaId' });
+  Ponuda.hasMany(Ponuda, { foreignKey: 'vezanaPonudaId' });
 };

@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const upitElement = document.createElement('div');
             upitElement.className = 'upit';
             upitElement.innerHTML = `
-                <p><strong>ID Nekretnine:</strong> ${upit.id_nekretnine}</p>
-                <p><strong>Tekst upita:</strong> ${upit.tekst_upita}</p>
+                <p><strong>ID Nekretnine:</strong> ${upit.nekretnina_id}</p>
+                <p><strong>Tekst upita:</strong> ${upit.tekst}</p>
             `;
             upitiContainer.appendChild(upitElement);
         });

@@ -84,6 +84,28 @@ iframe {
   border-radius: 8px;
 }
 
+#zahtjevi {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #000;
+  padding: 20px;  
+  margin: 20px;
+  background-color: #ff7f58;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+}
+
+#ponude {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #000;
+  padding: 20px;  
+  margin: 20px;
+  background-color: #ff7f58;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+}
+
 @media(min-width: 801px) {
   #upiti {
     grid-template-columns: repeat(2, 1fr);
@@ -150,4 +172,80 @@ iframe {
   .carousel-nav {
     margin: 10px 0;
   }
+}
+
+form#interesovanje-form {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Labels and inputs */
+form#interesovanje-form label {
+  font-weight: bold;
+  margin-bottom: 8px;
+  display: block;
+  color: #333;
+}
+
+form#interesovanje-form select,
+form#interesovanje-form textarea,
+form#interesovanje-form input[type="date"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #333;
+}
+
+form#interesovanje-form select:focus,
+form#interesovanje-form textarea:focus,
+form#interesovanje-form input[type="date"]:focus {
+  border-color: #0056b3;
+  outline: none;
+}
+
+/* Styling for the submit button */
+form#interesovanje-form button {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+form#interesovanje-form button:hover {
+  background-color: #0056b3;
+}
+
+/* Styling for the dropdown fields visibility */
+#ponuda-fields,
+#zahtjev-fields {
+  margin-top: 20px;
+}
+
+#ponuda-fields select {
+  cursor: pointer;
+}
+
+#common-fields textarea {
+  height: 120px;
+}
+
+h3 {
+  font-size: 24px;
+  color: #333;
+  margin-top: 40px;
 }

@@ -491,7 +491,7 @@ app.get('/nekretnina/:id/interesovanja', async (req, res) => {
 
 app.post('/nekretnina/:id/ponuda', async (req, res) => {
     const nekretnina_id = parseInt(req.params.id, 10);
-    const { tekst, ponudaCijene, datumPonude, idVezanePonude, odbijenaPonuda } = req.body;
+    const { tekst, ponudaCijene, datumPonude, vezanePonude, odbijenaPonuda } = req.body;
 
     if (isNaN(nekretnina_id)) {
         return res.status(400).json({ error: "Neispravan ID nekretnine" });
@@ -523,8 +523,8 @@ app.post('/nekretnina/:id/ponuda', async (req, res) => {
             return res.status(400).json({ error: "Ne mogu se dodavati nove ponude, prethodna ponuda je odbijena." });
         }
 
-        if (idVezanePonude) {
-            const vezanaPonuda = await db.Ponuda.findByPk(idVezanePonude);
+        if (vezanePonude ) {
+            const vezanaPonuda = await db.Ponuda.findByPk(vezanePonude );
             if (!vezanaPonuda) {
                 return res.status(404).json({ error: "Vezana ponuda nije pronađena" });
             }
@@ -538,7 +538,7 @@ app.post('/nekretnina/:id/ponuda', async (req, res) => {
             tekst,
             ponudaCijene,
             datumPonude,
-            vezanaPonudaId: idVezanePonude,
+            vezanePonude,
             odbijenaPonuda,
             korisnik_id: korisnik.id,
             nekretnina_id

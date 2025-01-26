@@ -20,6 +20,6 @@ module.exports = ({ Korisnik, Nekretnina, Upit, Zahtjev, Ponuda }) => {
   Ponuda.belongsTo(Korisnik, { foreignKey: 'korisnik_id' });
   Korisnik.hasMany(Ponuda, { foreignKey: 'korisnik_id' });
 
-  Ponuda.belongsTo(Ponuda, { foreignKey: 'vezanaPonudaId' });
-  Ponuda.hasMany(Ponuda, { foreignKey: 'vezanaPonudaId' });
+  Ponuda.belongsTo(Ponuda, { foreignKey: 'vezanePonude' });
+  Ponuda.hasMany(Ponuda, { foreignKey: 'vezanePonude' });
 };

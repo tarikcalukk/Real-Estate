@@ -43,7 +43,7 @@ module.exports = function(sequelize, DataTypes) {
             type: Sequelize.BOOLEAN,
             defaultValue: false
         },
-        vezanaPonudaId: {
+        vezanePonude: {
             type: Sequelize.INTEGER,
             allowNull: true,
             references: {

@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const zahtjeviContainer = document.getElementById('zahtjevi');
     const ponudeContainer = document.getElementById('ponude');
     const params = new URLSearchParams(window.location.search);
+    const lokacijaLink = document.getElementById('lokacija-link');
     const id = params.get('id');
 
     if (id) {
@@ -36,4 +37,23 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         alert('Pogrešan ID.');
     }
+
+    lokacijaLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        const lokacija = lokacijaLink.textContent;
+    
+        PoziviAjax.getTop5Nekretnina(lokacija, (error, nekretnine) => {
+            if (error) {
+                alert('Došlo je do greške prilikom dohvaćanja nekretnina.');
+                return;
+            }
+    
+            // Spremi nekretnine u `sessionStorage` za prenos na novu stranicu
+            sessionStorage.setItem('top5Nekretnina', JSON.stringify(nekretnine));
+            sessionStorage.setItem('lokacija', lokacija);
+    
+            // Preusmjeri na novu stranicu
+            window.location.href = 'top5.html';
+        });
+    });
 });

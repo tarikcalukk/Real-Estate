@@ -240,12 +240,12 @@ const PoziviAjax = (() => {
         });
     }
     
-    function impl_postPonuda(nekretnina_id, tekst, ponudaCijene,datumPotvrde,idVezanePonude,odbijenaPonuda, fnCallback) {
+    function impl_postPonuda(nekretnina_id, tekst, ponudaCijene,datumPotvrde,vezanePonude,odbijenaPonuda, fnCallback) {
         const ponudaData = {
             tekst,
             ponudaCijene,
             datumPonude: datumPotvrde,
-            idVezanePonude,
+            vezanePonude,
             odbijenaPonuda
         };
 

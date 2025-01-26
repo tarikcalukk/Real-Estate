@@ -5,24 +5,91 @@ function postaviCarousel(glavniElement, sviUpiti, indeks = 0, nekretnina_id = nu
 
     let kraj = false;
 
-    let carouselContainer = glavniElement.querySelector('.carousel-container');
-    if (!carouselContainer) {
-        carouselContainer = document.createElement('div');
-        carouselContainer.classList.add('carousel-container');
-        glavniElement.appendChild(carouselContainer);
-    }
+    glavniElement.innerHTML = `
+        <div class="carousel-wrapper">
+            <button class="carousel-button prev-button">◀</button>
+            <div class="carousel-container">
+                <div class="carousel-item"></div>
+            </div>
+            <button class="carousel-button next-button">▶</button>
+        </div>
+    `;
+
+    const style = document.createElement('style');
+    style.textContent = `
+        .carousel-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .carousel-container {
+            flex: 1;
+            overflow: hidden;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100px;
+            padding: 10px;
+        }
+
+        .carousel-item {
+            text-align: center;
+            font-size: 16px;
+            color: #333;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .carousel-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .carousel-button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .carousel-button:hover {
+            background-color: #0056b3;
+        }
+
+        .carousel-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    `;
+    document.head.appendChild(style);
+
+    const carouselContainer = glavniElement.querySelector('.carousel-container');
+    const carouselItem = carouselContainer.querySelector('.carousel-item');
+    const prevButton = glavniElement.querySelector('.prev-button');
+    const nextButton = glavniElement.querySelector('.next-button');
 
     function azurirajPrikaz() {
         const upit = sviUpiti[indeks];
-        carouselContainer.innerHTML = `
-            <div class="upit">
-                <p class="upit-tekst">${upit.tekst || 'Tekst nije dostupan'}</p>
-            </div>
-        `;
+        carouselItem.textContent = upit.tekst || 'Tekst nije dostupan';
 
-        const currentUpit = carouselContainer.querySelector('.upit');
+        carouselItem.classList.remove('visible');
         setTimeout(() => {
-            currentUpit.classList.add('visible');
+            carouselItem.classList.add('visible');
         }, 10);
     }
 
@@ -46,23 +113,8 @@ function postaviCarousel(glavniElement, sviUpiti, indeks = 0, nekretnina_id = nu
         }
     }
 
-    let prevButton = glavniElement.querySelector('.prev-button');
-    if (!prevButton) {
-        prevButton = document.createElement('button');
-        prevButton.classList.add('prev-button');
-        prevButton.textContent = '▶';
-        prevButton.addEventListener('click', fnLijevo);
-        glavniElement.appendChild(prevButton);
-    }
-
-    let nextButton = glavniElement.querySelector('.next-button');
-    if (!nextButton) {
-        nextButton = document.createElement('button');
-        nextButton.classList.add('next-button');
-        nextButton.textContent = '◀';
-        nextButton.addEventListener('click', fnDesno);
-        glavniElement.appendChild(nextButton);
-    }
+    prevButton.addEventListener('click', fnLijevo);
+    nextButton.addEventListener('click', fnDesno);
 
     azurirajPrikaz();
 
